@@ -14,10 +14,12 @@ A Raspberry Pi-based bird camera system that uses C++ for camera and sensor cont
 ## **Checkpoints**
 ### **ML Model Development & Training**
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jj5cHTC-tGtNcy4WQIQU7NtI3_4wVIw5?usp=sharing)
-[X] Identify Dataset
-[X] Model Development
-[X] Model Tuning
-[X] Model Retraining Process (for new animals identified)
+- [X] Identify Dataset
+- [X] Model Development
+- [X] Model Tuning
+- [ ] Hypertuning for Retraining Optimization
+- [ ] New Species Scraping and Appending to Dataset
+- [ ] Model Retraining Process (for new animals identified)
 
 ### **Setup**
 - [ ] Raspberry Pi OS installed and updated.
