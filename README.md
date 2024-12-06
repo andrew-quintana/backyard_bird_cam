@@ -12,12 +12,19 @@ A Raspberry Pi-based bird camera system that uses C++ for camera and sensor cont
 - Streams live video upon request via a browser.
 
 ## **Checkpoints**
+### **ML Model Development & Training**
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jj5cHTC-tGtNcy4WQIQU7NtI3_4wVIw5?usp=sharing)
+[X] Identify Dataset
+[X] Model Development
+[X] Model Tuning
+[X] Model Retraining Process (for new animals identified)
+
 ### **Setup**
 - [ ] Raspberry Pi OS installed and updated.
 - [ ] Camera module connected and tested (`raspistill` command).
 - [ ] PIR sensor connected and functional (`gpiozero` test in Python).
 
-### **Development**
+### **Implementation**
 - [ ] C++ code for motion-triggered camera capture completed.
 - [ ] Python ML model integration for classification functional.
 - [ ] Cloud upload script tested with credentials.
