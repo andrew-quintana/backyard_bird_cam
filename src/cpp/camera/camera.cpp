@@ -1,29 +1,32 @@
 #include "camera.hpp"
-#include <iostream>
+#include "logger.hpp" // Include the logger for the LOG macro
 #include <fstream>
 
-Camera::Camera() {}
+Camera::Camera() {
+    LOG("INFO", "camera", "Camera object created.");
+}
 
 Camera::~Camera() {
     if (camera.isOpened()) {
         camera.release();
+        LOG("INFO", "camera", "Camera resources released.");
     }
 }
 
 bool Camera::initialize() {
-    // open the camera
+    // Attempt to open the camera
     if (!camera.open()) {
-        std::cerr << "Error: Unable to open the camera." << std::endl;
+        LOG("ERROR", "camera", "Unable to open the camera.");
         return false;
     }
 
-    std::cout << "Camera initialized successfully." << std::endl;
+    LOG("INFO", "camera", "Camera initialized successfully.");
     return true;
 }
 
 bool Camera::captureImage(const std::string& filename) {
     if (!camera.isOpened()) {
-        std::cerr << "Error: Camera is not initialized." << std::endl;
+        LOG("ERROR", "camera", "Camera is not initialized.");
         return false;
     }
 
@@ -37,15 +40,15 @@ bool Camera::captureImage(const std::string& filename) {
     // Save the image to a file
     std::ofstream outFile(filename, std::ios::binary);
     if (!outFile) {
-        std::cerr << "Error: Unable to open file for writing: " << filename << std::endl;
+        LOG("ERROR", "camera", "Unable to open file for writing: " + filename);
         delete[] data;
         return false;
     }
 
+    // Write the image data to the file
     outFile << "P6\n" << camera.getWidth() << " " << camera.getHeight() << " 255\n";
     outFile.write(reinterpret_cast<char*>(data), camera.getImageTypeSize(raspicam::RASPICAM_FORMAT_RGB));
-
-    std::cout << "Image saved to: " << filename << std::endl;
+    LOG("INFO", "camera", "Image saved to: " + filename);
 
     // Free allocated memory
     delete[] data;
