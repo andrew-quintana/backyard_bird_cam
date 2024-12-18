@@ -16,4 +16,8 @@ add_subdirectory(src/cpp/logger)
 add_subdirectory(tests/cpp_tests)
 
 # find mutually used packages
+find_package(Python3 REQUIRED)
 find_package(pybind11 REQUIRED)
+
+# Ensure Python from virtual environment is used
+set(PYTHON_EXECUTABLE ${PROJECT_SOURCE_DIR}/.venv/bin/python)

@@ -1,0 +1,9 @@
+.venv/
+logs/
+*.pyc
+__pycache__/
+notebooks/kaggle.json
+.vscode
+config.txt
+data/
+notebooks/species_scraper.ipynb
