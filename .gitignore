@@ -50,6 +50,7 @@ venv.bak/
 .vscode/
 *.swp
 *.swo
+.cursor.json
 
 # Project specific
 photos/
