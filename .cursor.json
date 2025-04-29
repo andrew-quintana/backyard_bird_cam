@@ -1,0 +1,29 @@
+{
+  "folders": [
+    "src/sensors",
+    "src/camera",
+    "src/storage",
+    "src/uploader",
+    "src/inference",
+    "src/config",
+    "tests"
+  ],
+  "files": [
+    "src/sensors/pir_sensor.py",
+    "src/camera/camera_handler.py",
+    "src/storage/photo_storage.py",
+    "src/uploader/uploader.py",
+    "src/inference/inference_engine.py",
+    "src/config/settings.py",
+    "src/main.py",
+    "tests/test_pir_sensor.py",
+    "tests/test_camera_handler.py",
+    "tests/test_photo_storage.py",
+    "tests/test_uploader.py",
+    "tests/test_inference_engine.py",
+    "README.md",
+    "requirements.txt",
+    ".flake8",
+    ".gitignore"
+  ]
+} 
