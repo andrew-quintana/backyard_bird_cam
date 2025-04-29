@@ -1,6 +1,7 @@
 """Configuration settings module."""
 import os
 import json
+import logging
 
 
 class Settings:
@@ -39,15 +40,60 @@ class Settings:
         """
         self.config_file = config_file
         self.settings = {}
+        self.logger = logging.getLogger(__name__)
         self.load()
         
     def load(self):
         """Load settings from file or use defaults if file doesn't exist."""
-        pass
+        self.logger.info(f"Loading settings from {self.config_file}")
+        
+        # Start with default settings
+        self.settings = self.DEFAULT_SETTINGS.copy()
+        
+        # Override with file settings if available
+        if os.path.exists(self.config_file):
+            try:
+                with open(self.config_file, 'r') as f:
+                    file_settings = json.load(f)
+                
+                # Update settings with file values
+                self._update_nested_dict(self.settings, file_settings)
+                self.logger.info("Settings loaded from file")
+            except Exception as e:
+                self.logger.error(f"Error loading settings from file: {e}")
+                self.logger.info("Using default settings")
+        else:
+            self.logger.info(f"Configuration file {self.config_file} not found. Using default settings.")
+            # Save the default settings to create the file
+            self.save()
+    
+    def _update_nested_dict(self, d, u):
+        """Update a nested dictionary recursively.
+        
+        Args:
+            d (dict): Original dictionary to update
+            u (dict): Dictionary with updated values
+        """
+        for k, v in u.items():
+            if isinstance(v, dict) and k in d and isinstance(d[k], dict):
+                self._update_nested_dict(d[k], v)
+            else:
+                d[k] = v
         
     def save(self):
         """Save current settings to file."""
-        pass
+        self.logger.info(f"Saving settings to {self.config_file}")
+        
+        try:
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(os.path.abspath(self.config_file)), exist_ok=True)
+            
+            with open(self.config_file, 'w') as f:
+                json.dump(self.settings, f, indent=4)
+                
+            self.logger.info("Settings saved successfully")
+        except Exception as e:
+            self.logger.error(f"Error saving settings: {e}")
         
     def get(self, section, key=None):
         """Get a setting value.
@@ -59,7 +105,18 @@ class Settings:
         Returns:
             The setting value or section dictionary
         """
-        pass
+        if section not in self.settings:
+            self.logger.warning(f"Section '{section}' not found in settings")
+            return None
+            
+        if key is None:
+            return self.settings[section]
+            
+        if key not in self.settings[section]:
+            self.logger.warning(f"Key '{key}' not found in section '{section}'")
+            return None
+            
+        return self.settings[section][key]
         
     def set(self, section, key, value):
         """Set a setting value.
@@ -68,5 +125,26 @@ class Settings:
             section (str): Settings section name
             key (str): Setting key name
             value: Value to set
+            
+        Returns:
+            bool: True if successful, False otherwise
         """
-        pass 
+        # Create section if it doesn't exist
+        if section not in self.settings:
+            self.settings[section] = {}
+            
+        # Set the value
+        self.settings[section][key] = value
+        
+        # Save the updated settings
+        self.save()
+        
+        return True
+        
+    def get_all(self):
+        """Get all settings.
+        
+        Returns:
+            dict: Copy of all settings
+        """
+        return self.settings.copy() 
