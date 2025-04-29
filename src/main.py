@@ -23,28 +23,45 @@ def signal_handler(sig, frame):
     shutdown_requested = True
 
 
-def setup_logging():
-    """Setup logging configuration."""
+def setup_logging(debug=False):
+    """Setup logging configuration.
+    
+    Args:
+        debug (bool): If True, sets log level to DEBUG for more detailed logs
+    """
+    log_level = logging.DEBUG if debug else logging.INFO
+    
     logging.basicConfig(
-        level=logging.INFO,
+        level=log_level,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
             logging.FileHandler("bird_camera.log"),
             logging.StreamHandler()
         ]
     )
+    
+    # Set logging level for specific components when in debug mode
+    if debug:
+        logging.getLogger('src.sensors.pir_sensor').setLevel(logging.DEBUG)
+        logging.getLogger('src.camera.camera_handler').setLevel(logging.DEBUG)
+        logging.getLogger('src.storage.photo_storage').setLevel(logging.DEBUG)
 
 
 def main():
     """Main function for the bird camera application."""
+    # Check for debug mode flag
+    debug_mode = "--debug" in sys.argv
+    
     # Register signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
-    setup_logging()
+    setup_logging(debug=debug_mode)
     logger = logging.getLogger(__name__)
     
     logger.info("Starting Bird Camera application")
+    if debug_mode:
+        logger.info("Running in DEBUG mode - detailed logs enabled")
     
     # Initialize components
     settings = Settings()
