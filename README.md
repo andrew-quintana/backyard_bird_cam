@@ -2,6 +2,15 @@
 
 A Raspberry Pi-based camera system designed to detect and photograph birds when motion is detected.
 
+## Project Status
+
+**Current Status: Development / Testing Phase**
+
+- **PIR Sensor**: Working on calibration and troubleshooting (currently not detecting motion properly)
+- **Camera Module**: Testing implementation (currently using mock camera fallback)
+- **Storage System**: Functional, successfully storing photos with metadata
+- **Service**: Systemd service created and functional for auto-start on boot
+
 ## Features
 
 - Motion detection using PIR sensor
@@ -10,6 +19,7 @@ A Raspberry Pi-based camera system designed to detect and photograph birds when 
 - Cloud upload capabilities (supporting S3, Dropbox, etc.)
 - Bird detection and species classification using machine learning
 - Configurable settings
+- Systemd service for auto-start on boot
 
 ## Hardware Requirements
 
@@ -22,7 +32,9 @@ A Raspberry Pi-based camera system designed to detect and photograph birds when 
 ## Software Requirements
 
 - Python 3.7+
-- Dependencies listed in requirements.txt
+- Picamera2 library
+- RPi.GPIO library
+- Other dependencies listed in requirements.txt
 
 ## Installation
 
@@ -32,12 +44,26 @@ git clone https://github.com/andrew-quintana/backyard_bird_cam.git
 cd backyard_bird_cam
 ```
 
-2. Install dependencies:
+2. Create and activate a virtual environment:
+```
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
 ```
 pip install -r requirements.txt
 ```
 
-3. Configure settings in `config.json` or use the default settings.
+4. Configure settings in `config.json` or use the default settings.
+
+5. Set up as a service (optional):
+```
+sudo cp systemd/bird_camera.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable bird_camera.service
+sudo systemctl start bird_camera.service
+```
 
 ## Usage
 
@@ -58,7 +84,24 @@ The system will:
 4. (Optional) Upload the photo to cloud storage
 5. (Optional) Run inference to detect and classify birds
 
-## Testing
+## Testing and Calibration
+
+### Hardware Testing Tools
+
+The project includes dedicated tools for testing and calibrating hardware components:
+
+- **PIR sensor tests**: Located in `tools/hardware_tests/`
+  ```
+  python tools/hardware_tests/check_pir_directly.py --pin 17
+  python tools/hardware_tests/check_inverted_pir.py --pin 17 --pullup
+  python tools/hardware_tests/long_pir_warmup.py --pin 17 --warmup 120
+  ```
+
+- **Calibration tools**: Located in `tools/calibration/`
+  ```
+  python tools/calibration/calibrate_pir.py --csv > pir_data.csv
+  python tools/calibration/analyze_pir_data.py pir_data.csv
+  ```
 
 ### Running Unit Tests
 
@@ -78,103 +121,61 @@ python -m unittest tests/test_camera_handler.py
 
 # Test the photo storage
 python -m unittest tests/test_photo_storage.py
-
-# Test the settings module
-python -m unittest tests/test_settings.py
 ```
-
-### Testing on Hardware
-
-The unit tests are designed to work both on development machines (using mocks) and on actual Raspberry Pi hardware (using real components).
-
-When running on Raspberry Pi, you can verify each hardware component independently:
-
-1. **Testing PIR Sensor**:
-   ```bash
-   # Run the PIR sensor tests (tests actual GPIO connections)
-   python -m unittest tests/test_pir_sensor.py
-   ```
-
-2. **Testing Camera**:
-   ```bash
-   # Run the camera tests (tests Picamera2)
-   python -m unittest tests/test_camera_handler.py
-   ```
-
-3. **Testing Storage**:
-   ```bash
-   # Run the storage tests
-   python -m unittest tests/test_photo_storage.py
-   ```
-
-### Debugging Hardware Issues
-
-For detailed debugging of hardware components, run the application with the `--debug` flag:
-```bash
-python src/main.py --debug
-```
-
-This will:
-- Enable DEBUG level logging (more detailed than INFO)
-- Log detailed information about hardware initialization and operations
-- Output detailed logs to both console and the log file (`bird_camera.log`)
-
-The debug logs can help identify issues with:
-- PIR sensor connections and signal detection
-- Camera initialization and photo capture
-- Storage operations
-- Configuration settings
 
 ## Project Structure
 
 ```
 backyard_bird_cam/
-├── src/
-│   ├── camera/            # Camera handling
-│   ├── config/            # Configuration settings
-│   ├── inference/         # ML inference for bird detection
-│   ├── sensors/           # PIR sensor interface
-│   ├── storage/           # Local storage management
-│   ├── uploader/          # Cloud upload functionality 
-│   └── main.py            # Main application
-├── tests/                 # Unit tests
-├── README.md              # This file
-└── requirements.txt       # Python dependencies
+├── src/                  # Main source code
+│   ├── camera/           # Camera handling
+│   ├── config/           # Configuration settings
+│   ├── inference/        # ML inference for bird detection
+│   ├── sensors/          # PIR sensor interface
+│   ├── storage/          # Local storage management
+│   ├── uploader/         # Cloud upload functionality 
+│   └── main.py           # Main application
+├── tests/                # Unit tests
+├── tools/                # Utility tools
+│   ├── calibration/      # Tools for calibrating sensors
+│   └── hardware_tests/   # Tools for testing hardware components
+├── systemd/              # Systemd service files
+├── README.md             # This file
+└── requirements.txt      # Python dependencies
 ```
 
 ## Configuration
 
 Edit `config.json` to customize settings:
-- PIR sensor GPIO pin
+- PIR sensor GPIO pin and trigger cooldown
 - Camera resolution and rotation
 - Storage directory and max photos
 - Cloud service credentials
 - ML model settings
 
-## Development
+## Troubleshooting
 
-### Running Tests
+### PIR Sensor Issues
+- Check wiring connections
+- Try different GPIO pins
+- Test with both pull-up and pull-down resistor configurations
+- Ensure sensor has sufficient warm-up time (2-3 minutes)
+- Use the hardware test tools in `tools/hardware_tests/`
 
-```
-python -m unittest discover tests
-```
+### Camera Issues
+- Verify Picamera2 library is properly installed
+- Check camera is properly connected to the Raspberry Pi
+- Make sure camera is enabled in Raspberry Pi configuration
+- Check camera isn't in mock mode due to missing dependencies
 
-### Contributing
+### Storage Issues
+- Ensure proper permissions for storage directories
+- Verify sufficient disk space
 
-1. Fork the repository
-2. Create a feature branch
-3. Add your changes
-4. Run tests
-5. Submit a pull request
+### Service Issues
+- Check service status: `sudo systemctl status bird_camera.service`
+- View logs: `sudo journalctl -u bird_camera.service -f`
 
 ## License
 
-MIT License - See LICENSE file for details
-
-## Troubleshooting
-
-- Check PIR sensor connection if motion is not being detected
-- Verify camera module is properly connected if photos aren't being captured
-- Ensure proper permissions for storage directories
-- Review logs in `bird_camera.log` for detailed error information
-- Run with `--debug` flag for more detailed logs: `python src/main.py --debug` 
+MIT License - See LICENSE file for details 
