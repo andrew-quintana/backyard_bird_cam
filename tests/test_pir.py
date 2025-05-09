@@ -5,9 +5,21 @@ This script monitors the PIR sensor and prints when motion is detected.
 """
 import pigpio
 import time
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file if it exists
+env_path = Path('..') / '.env'
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    env_path = Path('.') / '.env'
+    if env_path.exists():
+        load_dotenv(dotenv_path=env_path)
 
 # Set the GPIO pin number where your PIR sensor is connected
-PIR_PIN = 4
+PIR_PIN = int(os.getenv('PIR_PIN', 4))
 
 def main():
     print("PIR Motion Sensor Test")

@@ -2,4 +2,5 @@ picamera2>=0.3.12
 numpy>=1.22.0
 pillow>=9.0.0
 pigpio>=1.78
-RPi.GPIO>=0.7.0 
+RPi.GPIO>=0.7.0
+python-dotenv>=0.19.0 

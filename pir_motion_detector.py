@@ -1,14 +1,29 @@
 #!/usr/bin/env python3
+"""
+Bird Camera Motion Detection System
+Uses a PIR sensor to detect motion and capture photos using picamera2.
+Configuration is loaded from .env file if present.
+"""
 import pigpio
 import time
 import datetime
 import os
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
 
-# Configuration
-PIR_PIN = 4                    # BCM pin number for PIR sensor
-PHOTO_DIR = "data/photos"      # Directory to store photos
-LOG_FILE = "motion_events.log" # Log file for motion events
-COOLDOWN_TIME = 5              # Seconds to wait between motion detections
+# Load environment variables from .env file if it exists
+env_path = Path('.') / '.env'
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    print("Warning: .env file not found. Using default values.")
+
+# Configuration from environment variables with defaults
+PIR_PIN = int(os.getenv('PIR_PIN', 4))
+PHOTO_DIR = os.getenv('PHOTO_DIR', 'data/photos')
+LOG_FILE = os.getenv('LOG_FILE', 'motion_events.log')
+COOLDOWN_TIME = int(os.getenv('COOLDOWN_TIME', 5))
 
 def log_event(message):
     """Log a message to both console and log file."""
@@ -39,9 +54,12 @@ def main():
     """Main function to monitor PIR sensor and capture photos on motion detection."""
     log_event("Starting PIR motion detection system")
     log_event(f"Using GPIO pin {PIR_PIN}")
+    log_event(f"Photos will be saved to {os.path.abspath(PHOTO_DIR)}")
     
     # Ensure the log file directory exists
-    os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+    log_dir = os.path.dirname(LOG_FILE)
+    if log_dir:
+        os.makedirs(log_dir, exist_ok=True)
     
     try:
         # Connect to the pigpio daemon

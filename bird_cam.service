@@ -7,6 +7,7 @@ User=fizz
 WorkingDirectory=/home/fizz/bird_cam
 ExecStartPre=/usr/bin/sudo /usr/bin/systemctl start pigpiod
 ExecStart=/usr/bin/python3 /home/fizz/bird_cam/pir_motion_detector.py
+EnvironmentFile=-/home/fizz/bird_cam/.env
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

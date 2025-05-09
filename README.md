@@ -30,6 +30,13 @@ A Raspberry Pi-based camera system for capturing photos of birds when motion is 
    - Connect the PIR sensor to GPIO pin 4 (BCM numbering)
    - Connect the camera module to the CSI port
 
+4. Configure environment variables:
+   ```
+   cp env.example .env
+   nano .env
+   ```
+   Edit the configuration values as needed for your setup.
+
 ## Usage
 
 ### Testing the Components
@@ -58,11 +65,13 @@ sudo systemctl start bird_cam
 
 ## Configuration
 
-Edit the `pir_motion_detector.py` file to modify:
+The system can be configured through the `.env` file:
+
 - `PIR_PIN`: GPIO pin for the PIR sensor (default: 4)
 - `PHOTO_DIR`: Directory to store photos (default: "data/photos")
 - `LOG_FILE`: Log file location (default: "motion_events.log")
 - `COOLDOWN_TIME`: Time between motion triggers in seconds (default: 5)
+- `CAMERA_ROTATION`: Rotation for the camera in degrees (default: 0)
 
 ## Troubleshooting
 
@@ -71,4 +80,5 @@ If you encounter issues:
 1. Ensure GPIO access is enabled: `sudo raspi-config`
 2. Check if the pigpio daemon is running: `systemctl status pigpiod`
 3. Verify camera is working: `libcamera-still -o test.jpg`
-4. Check permissions: Ensure user is in the `gpio` group 
+4. Check permissions: Ensure user is in the `gpio` group
+5. Check the .env file is properly configured 
