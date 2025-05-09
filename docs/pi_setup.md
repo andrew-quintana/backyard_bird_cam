@@ -68,6 +68,22 @@ This will continuously monitor the PIR sensor and take a photo whenever motion i
 
 Press `Ctrl+C` to stop the program.
 
+## Transferring Images to Your Computer
+
+From your local computer, use the transfer script to copy the images from the Pi:
+
+```bash
+# Replace "fizz" with your Pi username and the IP with your Pi's IP address
+./scripts/transfer_images.sh fizz 192.168.1.100
+```
+
+**Important**: Make sure you use the correct username for your Raspberry Pi. The default username is often "pi" but in some setups it may be different (like "fizz").
+
+The transfer script will:
+1. Connect to your Pi via SSH
+2. Look for JPG files in `/home/username/backyard_bird_cam/data/photos/`
+3. Copy them to your local computer at `data/remote_photos/`
+
 ## Custom Settings
 
 You can customize the script with these options:
@@ -115,4 +131,9 @@ The `sleep 30` gives the system time to fully boot before starting the camera sc
 
 4. **Permissions issues**
    - Ensure all scripts are executable: `chmod +x scripts/*.py scripts/*.sh`
-   - Check that the data directory is writable: `chmod -R 755 data` 
+   - Check that the data directory is writable: `chmod -R 755 data`
+
+5. **Transfer script not finding images**
+   - Make sure you're using the correct username when running the transfer script
+   - The default path is `/home/username/backyard_bird_cam/data/photos/`
+   - You can specify a custom path: `./scripts/transfer_images.sh username ip_address /custom/path/to/photos` 
