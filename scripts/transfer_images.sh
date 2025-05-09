@@ -5,7 +5,7 @@
 # Default values
 PI_USER=${1:-pi}
 PI_IP=${2:-raspberrypi.local}
-REMOTE_PATH=${3:-/home/pi/bird_cam/data/photos}
+REMOTE_PATH=${3:-/home/pi/backyard_bird_cam/data/photos}
 LOCAL_PATH=${4:-./data/remote_photos}
 
 # Create local directory if it doesn't exist
