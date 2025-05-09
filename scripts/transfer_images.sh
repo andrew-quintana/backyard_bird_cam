@@ -2,12 +2,17 @@
 # Transfer images from Raspberry Pi to local computer
 # Usage: ./transfer_images.sh [pi_username] [pi_ip_address] [remote_path] [local_path]
 
+# Get the absolute path of the script's directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
 # Default values
 PI_USER=${1:-pi}
 PI_IP=${2:-raspberrypi.local}
 # Use the provided username in the default path
 REMOTE_PATH=${3:-/home/$PI_USER/backyard_bird_cam/data/photos}
-LOCAL_PATH=${4:-./data/remote_photos}
+# Use absolute path for local destination
+LOCAL_PATH=${4:-"$PROJECT_ROOT/data/remote_photos"}
 
 # Create local directory if it doesn't exist
 mkdir -p "$LOCAL_PATH"
@@ -17,7 +22,7 @@ echo "Transferring images from Raspberry Pi"
 echo "-------------------------------------"
 echo "Pi address: $PI_USER@$PI_IP"
 echo "Remote path: $REMOTE_PATH"
-echo "Local path: $LOCAL_PATH"
+echo "Local path: $LOCAL_PATH (absolute path)"
 echo
 
 # First, get a list of files

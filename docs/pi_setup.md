@@ -73,16 +73,25 @@ Press `Ctrl+C` to stop the program.
 From your local computer, use the transfer script to copy the images from the Pi:
 
 ```bash
+# Navigate to your local project directory
+cd /path/to/your/local/bird_cam
+
 # Replace "fizz" with your Pi username and the IP with your Pi's IP address
 ./scripts/transfer_images.sh fizz 192.168.1.100
 ```
 
-**Important**: Make sure you use the correct username for your Raspberry Pi. The default username is often "pi" but in some setups it may be different (like "fizz").
+**Important notes**:
+- Make sure you use the correct username for your Raspberry Pi. The default username is often "pi" but in some setups it may be different (like "fizz").
+- The script uses absolute paths, so the images will be saved to `[project_root]/data/remote_photos` regardless of where you run the script from.
+- You can specify a custom destination path as the fourth parameter:
+  ```bash
+  ./scripts/transfer_images.sh fizz 192.168.1.100 /home/fizz/backyard_bird_cam/data/photos /absolute/path/to/destination
+  ```
 
 The transfer script will:
 1. Connect to your Pi via SSH
 2. Look for JPG files in `/home/username/backyard_bird_cam/data/photos/`
-3. Copy them to your local computer at `data/remote_photos/`
+3. Copy them to your local computer at the specified destination
 
 ## Custom Settings
 
