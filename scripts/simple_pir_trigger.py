@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-Simple PIR-Triggered Camera
+Smart PIR-Triggered Bird Camera
 
 Takes high-resolution photos when motion is detected by the PIR sensor.
-Uses auto/default settings for simple testing.
+Features:
+- Always-active camera for fastest response time
+- Burst mode: Captures multiple photos when motion is detected
+- Configurable PIR sampling rate for adjustable sensitivity
 """
 
 import os
@@ -14,58 +17,140 @@ import datetime
 import pigpio
 import signal
 import sys
+from picamera2 import Picamera2
+from libcamera import controls
+import RPi.GPIO as GPIO
 
 # Default settings
 DEFAULT_OUTPUT_DIR = "data/photos"
 DEFAULT_PIR_PIN = 4
-DEFAULT_COOLDOWN = 3  # seconds between photos
+DEFAULT_COOLDOWN = 3  # seconds between motion triggers
+DEFAULT_BURST_COUNT = 3  # number of photos in burst
+DEFAULT_BURST_DELAY = 0.5  # seconds between burst photos
+DEFAULT_SAMPLING_RATE = 0.1  # seconds between PIR sensor checks
 
-def signal_handler(sig, frame):
-    """Handle Ctrl+C to exit cleanly"""
-    print("\nExiting the PIR trigger program.")
-    sys.exit(0)
+# Global camera variable
+camera = None
+
+def initialize_camera():
+    """Initialize the camera and keep it active"""
+    global camera
+    try:
+        camera = Picamera2()
+        # Configure for high resolution still capture
+        still_config = camera.create_still_configuration(
+            main={"size": (4056, 3040)},
+            lores={"size": (640, 480)},
+            display="lores"
+        )
+        camera.configure(still_config)
+        
+        # Start the camera and keep it active
+        camera.start(show_preview=False)
+        
+        # Apply initial settings
+        camera.set_controls({
+            "AfMode": controls.AfModeEnum.Continuous,
+            "AwbMode": controls.AwbModeEnum.Auto,
+            "AeEnable": True
+        })
+        
+        print("Camera initialized and active")
+        return True
+    except Exception as e:
+        print(f"Failed to initialize camera: {e}")
+        return False
 
 def capture_photo(output_dir, filename):
-    """Capture a high-resolution photo with auto settings"""
+    """Capture a high-resolution photo with the always-active camera"""
+    global camera
+    
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
     output_path = os.path.join(output_dir, filename)
     
-    # Simple command with max resolution and auto settings
-    cmd = [
-        "libcamera-still", 
-        "-o", output_path,
-        "--width", "4056",     # Maximum width
-        "--height", "3040",    # Maximum height
-        "--quality", "100",    # Maximum quality
-        "--immediate"          # Don't wait for auto-convergence
-    ]
-    
-    # Run the command
     try:
-        process = subprocess.run(cmd, capture_output=True, text=True)
-        if process.returncode == 0:
-            print(f"Photo captured: {output_path}")
-            return True
-        else:
-            print(f"Error capturing photo: {process.stderr}")
-            return False
+        # Make sure camera is initialized
+        if camera is None:
+            if not initialize_camera():
+                return False
+        
+        # Capture photo
+        camera.capture_file(output_path)
+        print(f"Photo captured: {output_path}")
+        return True
     except Exception as e:
         print(f"Exception while capturing photo: {e}")
+        # Try to recover by reinitializing the camera
+        try:
+            if camera:
+                camera.close()
+            camera = None
+            initialize_camera()
+        except:
+            pass
         return False
 
+def capture_burst(output_dir, base_filename, count, delay):
+    """Capture a burst of photos in sequence"""
+    successful_captures = 0
+    
+    # Use timestamp as the base for all files in burst
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    for i in range(count):
+        # Create filename with burst index
+        if count > 1:
+            filename = f"{base_filename}_{timestamp}_burst{i+1}.jpg"
+        else:
+            filename = f"{base_filename}_{timestamp}.jpg"
+            
+        # Capture the photo
+        if capture_photo(output_dir, filename):
+            successful_captures += 1
+        
+        # Wait between burst photos, but not after the last one
+        if i < count - 1:
+            time.sleep(delay)
+    
+    return successful_captures
+
+def cleanup():
+    """Clean up resources properly"""
+    global camera
+    try:
+        if camera:
+            camera.close()
+            camera = None
+        GPIO.cleanup()
+    except:
+        pass
+    print("Cleanup complete")
+
+def signal_handler(sig, frame):
+    """Handle Ctrl+C and other signals"""
+    print("Exiting...")
+    cleanup()
+    sys.exit(0)
+
 def main():
-    parser = argparse.ArgumentParser(description="Simple PIR-triggered photo capture")
+    parser = argparse.ArgumentParser(description="Smart PIR-triggered bird camera")
     
     parser.add_argument("--output", "-o", default=DEFAULT_OUTPUT_DIR,
                         help=f"Output directory for photos (default: {DEFAULT_OUTPUT_DIR})")
     parser.add_argument("--pin", "-p", type=int, default=DEFAULT_PIR_PIN,
                         help=f"GPIO pin number for PIR sensor (default: {DEFAULT_PIR_PIN})")
     parser.add_argument("--cooldown", "-c", type=float, default=DEFAULT_COOLDOWN,
-                        help=f"Cooldown time between photos in seconds (default: {DEFAULT_COOLDOWN}s)")
+                        help=f"Cooldown time between motion triggers in seconds (default: {DEFAULT_COOLDOWN}s)")
+    parser.add_argument("--burst", "-b", type=int, default=DEFAULT_BURST_COUNT,
+                        help=f"Number of photos to take in burst mode (default: {DEFAULT_BURST_COUNT})")
+    parser.add_argument("--burst-delay", "-bd", type=float, default=DEFAULT_BURST_DELAY,
+                        help=f"Delay between burst photos in seconds (default: {DEFAULT_BURST_DELAY}s)")
+    parser.add_argument("--sampling-rate", "-sr", type=float, default=DEFAULT_SAMPLING_RATE,
+                        help=f"How often to check PIR sensor in seconds (default: {DEFAULT_SAMPLING_RATE}s)")
     parser.add_argument("--test", action="store_true",
-                        help="Take a test photo and exit (no PIR trigger)")
+                        help="Take a test burst and exit (no PIR trigger)")
     
     args = parser.parse_args()
     
@@ -74,10 +159,9 @@ def main():
     
     # Take a test photo if requested
     if args.test:
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"test_{timestamp}.jpg"
-        capture_photo(args.output, filename)
-        print(f"Test photo saved to {os.path.join(args.output, filename)}")
+        print(f"Taking test burst of {args.burst} photos...")
+        capture_burst(args.output, "test", args.burst, args.burst_delay)
+        print(f"Test photos saved to {os.path.abspath(args.output)}")
         return
     
     # Connect to the pigpio daemon
@@ -100,7 +184,10 @@ def main():
     print(f"Using pin GPIO{args.pin} for motion detection")
     print(f"Photos will be saved to: {os.path.abspath(args.output)}")
     print(f"Maximum resolution photos (4056x3040)")
-    print(f"Cooldown between photos: {args.cooldown}s")
+    print(f"Burst mode: {args.burst} photos with {args.burst_delay}s delay")
+    print(f"Cooldown between triggers: {args.cooldown}s")
+    print(f"PIR sensor sampling rate: {args.sampling_rate}s")
+    print("Camera kept always active for fastest response")
     print("Press Ctrl+C to exit")
     
     # Small warm-up time for the PIR sensor
@@ -109,6 +196,9 @@ def main():
     print("Ready to detect motion!")
     
     try:
+        # Initialize camera and keep it active
+        initialize_camera()
+        
         while True:
             # Read current state
             current_state = pi.read(args.pin)
@@ -121,28 +211,31 @@ def main():
             
             # Check if motion was detected (rising edge: 0->1) and past cooldown period
             if current_state == 1 and last_state == 0 and (current_time - last_motion_time > args.cooldown):
-                # Motion detected, take a photo
-                print("Motion detected! Capturing photo...")
+                # Motion detected, take a burst of photos
+                print(f"Motion detected! Capturing burst of {args.burst} photos...")
                 
-                # Create filename with timestamp
-                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                filename = f"motion_{timestamp}.jpg"
+                # Capture the burst
+                successful = capture_burst(args.output, "motion", args.burst, args.burst_delay)
+                photo_count += successful
                 
-                if capture_photo(args.output, filename):
-                    photo_count += 1
+                if successful > 0:
+                    print(f"Burst complete: {successful}/{args.burst} photos captured")
                     last_motion_time = current_time
+                else:
+                    print("Failed to capture any photos in burst")
                 
             # Update last state
             last_state = current_state
             
-            # Short delay to prevent CPU hogging
-            time.sleep(0.1)
+            # Delay between PIR sensor checks (sampling rate)
+            time.sleep(args.sampling_rate)
             
     except KeyboardInterrupt:
         print("\nProgram stopped by user")
     finally:
         if pi.connected:
             pi.stop()
+        cleanup()
         print(f"Total photos captured: {photo_count}")
 
 if __name__ == "__main__":

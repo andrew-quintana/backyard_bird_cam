@@ -1,16 +1,17 @@
 [Unit]
-Description=Bird Camera Detection Service
+Description=Bird Camera System
 After=network.target
 
 [Service]
 Type=simple
 User=pi
-WorkingDirectory=/home/pi/backyard_bird_cam
-ExecStart=/home/pi/backyard_bird_cam/venv/bin/python3 src/main.py
-Restart=on-failure
-RestartSec=5
-StandardOutput=journal
-StandardError=journal
+WorkingDirectory=/home/pi/bird_cam
+ExecStart=/home/pi/bird_cam/scripts/launch_bird_cam.sh
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=birdcam
 
 [Install]
 WantedBy=multi-user.target 
