@@ -3,11 +3,11 @@ Description=Bird Camera Motion Detection Service
 After=network.target pigpiod.service
 
 [Service]
-User=fizz
-WorkingDirectory=/home/fizz/bird_cam
+User=%USER%
+WorkingDirectory=%HOME%/bird_cam
 ExecStartPre=/usr/bin/sudo /usr/bin/systemctl start pigpiod
-ExecStart=/usr/bin/python3 /home/fizz/bird_cam/pir_motion_detector.py
-EnvironmentFile=-/home/fizz/bird_cam/.env
+ExecStart=/usr/bin/python3 %HOME%/bird_cam/bird_cam.py
+EnvironmentFile=-%HOME%/bird_cam/.env
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

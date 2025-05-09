@@ -29,3 +29,10 @@ data/
 
 # Specific to this project
 motion_events.log
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+temp_scripts/

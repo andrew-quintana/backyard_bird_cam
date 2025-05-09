@@ -1,0 +1,1 @@
+"""Inference module for the Bird Camera System.""" 

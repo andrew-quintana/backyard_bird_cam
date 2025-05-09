@@ -1,0 +1,1 @@
+"""Storage module for the Bird Camera System.""" 
