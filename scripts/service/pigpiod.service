@@ -6,6 +6,8 @@ After=network.target
 ExecStart=/usr/bin/pigpiod
 ExecStop=/bin/systemctl kill pigpiod
 Type=forking
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target 
