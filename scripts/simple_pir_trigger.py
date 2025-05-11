@@ -24,7 +24,7 @@ import RPi.GPIO as GPIO
 # Default settings
 DEFAULT_OUTPUT_DIR = "data/photos"
 DEFAULT_PIR_PIN = 4
-DEFAULT_COOLDOWN = 3  # seconds between motion triggers
+DEFAULT_COOLDOWN = 0  # seconds between motion triggers
 DEFAULT_BURST_COUNT = 3  # number of photos in burst
 DEFAULT_BURST_DELAY = 0.5  # seconds between burst photos
 DEFAULT_SAMPLING_RATE = 0.1  # seconds between PIR sensor checks
@@ -101,10 +101,7 @@ def capture_burst(output_dir, base_filename, count, delay):
     
     for i in range(count):
         # Create filename with burst index
-        if count > 1:
-            filename = f"{base_filename}_{timestamp}_burst{i+1}.jpg"
-        else:
-            filename = f"{base_filename}_{timestamp}.jpg"
+        filename = f"{timestamp}_burst{i+1}.jpg"
             
         # Capture the photo
         if capture_photo(output_dir, filename):
