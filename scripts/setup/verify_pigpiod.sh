@@ -37,24 +37,34 @@ if sudo netstat -tulpn 2>/dev/null | grep :8888 > /dev/null; then
     sudo netstat -tulpn 2>/dev/null | grep :8888
 fi
 
-# Start pigpiod with verbose output
+# Check permissions
+echo "Checking permissions..."
+ls -l /dev/gpiomem 2>/dev/null || echo "WARNING: /dev/gpiomem does not exist"
+groups $USER | grep -q gpio && echo "User is in gpio group" || echo "WARNING: User is not in gpio group"
+
+# Start pigpiod with verbose output and log to file
 echo "Starting pigpiod..."
-sudo pigpiod -v
+sudo pigpiod -v > /tmp/pigpiod.log 2>&1
+PIGPID=$!
 
 # Wait for it to start
 sleep 2
 
 # Check if it's running
 if check_pigpiod; then
-    echo "pigpiod process is running"
+    echo "pigpiod process is running (PID: $PIGPID)"
     # Check if it's listening on port 8888
     if sudo netstat -tulpn 2>/dev/null | grep :8888 > /dev/null; then
         echo "pigpiod is listening on port 8888"
     else
         echo "WARNING: pigpiod is not listening on port 8888!"
+        echo "Checking pigpiod logs:"
+        cat /tmp/pigpiod.log
     fi
 else
     echo "Failed to start pigpiod process"
+    echo "Checking pigpiod logs:"
+    cat /tmp/pigpiod.log
     exit 1
 fi
 
@@ -69,5 +79,7 @@ else
     ps aux | grep pigpiod | grep -v grep
     echo "Port status:"
     sudo netstat -tulpn 2>/dev/null | grep :8888 || echo "No process listening on port 8888"
+    echo "Checking pigpiod logs:"
+    cat /tmp/pigpiod.log
     exit 1
 fi 
