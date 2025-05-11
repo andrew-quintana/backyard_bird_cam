@@ -1,17 +1,22 @@
 [Unit]
-Description=Daemon required to control GPIO pins via pigpio
+Description=PIGPIO Daemon Service
 After=network.target
+Before=backyard_bird_cam@%i.service
 
 [Service]
 Type=simple
-User=root
+User=%i
+Group=gpio
 ExecStartPre=/bin/sleep 2
 ExecStart=/usr/bin/pigpiod -v
-ExecStop=/bin/systemctl kill pigpiod
+ExecStartPost=/bin/sleep 2
+ExecStartPost=/usr/bin/pgrep pigpiod
+ExecStartPost=/bin/sleep 1
+ExecStartPost=/usr/bin/python3 -c "import pigpio; pi = pigpio.pi(); pi.stop()"
 Restart=always
 RestartSec=10
-# Give time for the daemon to fully initialize
-TimeoutStartSec=30
+StandardOutput=append:/var/log/pigpiod.log
+StandardError=append:/var/log/pigpiod.error.log
 
 [Install]
 WantedBy=multi-user.target 

@@ -1,7 +1,7 @@
 [Unit]
 Description=Backyard Bird Camera Service
-After=network.target pigpiod.service
-Requires=pigpiod.service
+After=network.target pigpiod@%i.service
+Requires=pigpiod@%i.service
 
 [Service]
 Type=simple
@@ -9,6 +9,7 @@ User=%i
 Group=gpio
 WorkingDirectory=/home/%i/backyard_bird_cam
 ExecStartPre=/bin/sleep 5
+ExecStartPre=/usr/bin/python3 -c "import pigpio; pi = pigpio.pi(); pi.stop()"
 ExecStart=/usr/bin/python3 -u -m pi_bird_cam.main --debug
 ExecStop=/bin/kill -TERM $MAINPID
 KillMode=process
