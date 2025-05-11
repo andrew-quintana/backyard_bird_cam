@@ -10,14 +10,17 @@ Group=gpio
 WorkingDirectory=/home/%i/backyard_bird_cam
 ExecStartPre=/bin/sleep 5
 ExecStart=/usr/bin/python3 -u /home/%i/backyard_bird_cam/src/main.py
+ExecStop=/bin/kill -TERM $MAINPID
+KillMode=process
+KillSignal=SIGTERM
+TimeoutStopSec=30
 Restart=always
 RestartSec=10
-TimeoutStartSec=30
-TimeoutStopSec=30
 StandardOutput=append:/var/log/backyard_bird_cam.log
 StandardError=append:/var/log/backyard_bird_cam.error.log
 Environment=PYTHONUNBUFFERED=1
 Environment=PYTHONPATH=/home/%i/backyard_bird_cam/src
+Environment=DEBUG=1
 
 [Install]
 WantedBy=multi-user.target 
