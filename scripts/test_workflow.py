@@ -3,48 +3,47 @@
 import time
 import pigpio
 import sys
-import os
 import subprocess
+import os
 
 def check_pigpiod_running():
     """Check if pigpiod is running and return its PID."""
     try:
         result = subprocess.run(['pgrep', 'pigpiod'], capture_output=True, text=True)
-        if result.stdout.strip():
+        if result.returncode == 0:
             return result.stdout.strip()
         return None
     except Exception as e:
         print(f"Error checking pigpiod: {e}")
         return None
 
-def test_pigpiod_connection(max_retries=5, delay=2):
-    """Test connection to pigpiod with retries."""
-    # First check if pigpiod is running
-    pid = check_pigpiod_running()
-    if not pid:
-        print("pigpiod is not running. Starting it...")
+def start_pigpiod():
+    """Start pigpiod if not running."""
+    if not check_pigpiod_running():
+        print("Starting pigpiod...")
         try:
             subprocess.run(['sudo', 'pigpiod', '-v'], check=True)
-            time.sleep(2)  # Give it time to start
+            print("Waiting for pigpiod to initialize...")
+            time.sleep(5)  # Give it time to fully start
         except Exception as e:
-            print(f"Failed to start pigpiod: {e}")
+            print(f"Error starting pigpiod: {e}")
             return False
-    
-    # Now try to connect
+    return True
+
+def test_pigpiod_connection(max_retries=5, delay=2):
+    """Test connection to pigpiod with retries."""
+    # First ensure pigpiod is running
+    if not start_pigpiod():
+        return False
+
     for attempt in range(max_retries):
         try:
             print(f"Attempt {attempt + 1}/{max_retries} to connect to pigpiod...")
-            print(f"Current PIGPIO_ADDR: {os.environ.get('PIGPIO_ADDR', 'not set')}")
-            print(f"Current PIGPIO_PORT: {os.environ.get('PIGPIO_PORT', 'not set')}")
-            
-            # Try connecting with explicit parameters
-            pi = pigpio.pi('localhost', 8888)
+            pi = pigpio.pi()
             if pi.connected:
                 print("Successfully connected to pigpiod!")
                 pi.stop()
                 return True
-            else:
-                print("Connection failed - pi.connected is False")
         except Exception as e:
             print(f"Connection attempt failed: {e}")
         
@@ -64,8 +63,4 @@ if __name__ == "__main__":
     else:
         print("\nPigpiod connection test failed!")
         print("Please check if pigpiod is running: sudo pigpiod -v")
-        print("You may need to:")
-        print("1. Stop any existing pigpiod: sudo killall pigpiod")
-        print("2. Start pigpiod fresh: sudo pigpiod -v")
-        print("3. Wait a few seconds and try again")
         sys.exit(1) 
