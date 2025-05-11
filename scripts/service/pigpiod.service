@@ -3,9 +3,10 @@ Description=Daemon required to control GPIO pins via pigpio
 After=network.target
 
 [Service]
+Type=forking
+User=root
 ExecStart=/usr/bin/pigpiod
 ExecStop=/bin/systemctl kill pigpiod
-Type=forking
 Restart=always
 RestartSec=10
 
