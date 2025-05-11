@@ -7,7 +7,9 @@ Requires=pigpiod.service
 Type=simple
 User=%i
 WorkingDirectory=/home/%i/backyard_bird_cam
-ExecStartPre=/bin/sleep 5
+# Add user to gpio group and wait for pigpiod
+ExecStartPre=/usr/bin/sudo /usr/sbin/usermod -a -G gpio %i
+ExecStartPre=/bin/sleep 10
 ExecStart=/usr/bin/python3 /home/%i/backyard_bird_cam/scripts/simple_pir_trigger.py --sampling-rate 0.05 --burst 5 --burst-delay 0.3
 Restart=always
 RestartSec=10

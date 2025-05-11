@@ -9,6 +9,8 @@ ExecStart=/usr/bin/pigpiod
 ExecStop=/bin/systemctl kill pigpiod
 Restart=always
 RestartSec=10
+# Give time for the daemon to fully initialize
+TimeoutStartSec=30
 
 [Install]
 WantedBy=multi-user.target 
