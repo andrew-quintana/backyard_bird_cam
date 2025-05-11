@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bird Gallery | Bird Detection System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 60px;
+            background-color: #f5f7fa;
+        }
+        .navbar {
+            background-color: #2c3e50;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #ecf0f1 !important;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .bird-thumbnail {
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px 10px 0 0;
+        }
+        .footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+        }
+        .gallery-title {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .filter-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .pagination {
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-camera"></i> Bird Detection Server
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/gallery"><i class="bi bi-images"></i> Gallery</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/api/stats"><i class="bi bi-bar-chart"></i> API</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4 mt-4 mb-4 gallery-title">Bird Detection Gallery</h1>
+            <p class="lead">
+                Browse through all the bird detections captured by your camera system.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="filter-card">
+                <h5 class="mb-3"><i class="bi bi-funnel"></i> Filter Results</h5>
+                <form method="get" action="/gallery" class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="bird_only" name="bird_only" value="true" {% if bird_only %}checked{% endif %}>
+                            <label class="form-check-label" for="bird_only">
+                                Only show detections with birds
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="with_species" name="with_species" value="true" {% if with_species %}checked{% endif %}>
+                            <label class="form-check-label" for="with_species">
+                                Only show detections with identified species
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-filter"></i> Apply Filters
+                        </button>
+                        <a href="/gallery" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if results %}
+            {% for result in results %}
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="{{ result.annotated_url if result.annotated_url else result.image_url }}" 
+                             class="bird-thumbnail img-fluid" 
+                             alt="Bird detection">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {% if result.species %}
+                                    {{ result.species }}
+                                {% else %}
+                                    Bird Detection
+                                {% endif %}
+                            </h5>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Detected on {{ result.timestamp.split('T')[0] }} 
+                                    at {{ result.timestamp.split('T')[1].split('.')[0] }}
+                                </small>
+                            </p>
+                            <p class="card-text">
+                                Confidence: {{ "%.1f"|format(result.confidence*100) }}%
+                            </p>
+                            <a href="/details/{{ result.id }}" class="btn btn-primary">
+                                <i class="bi bi-info-circle"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    No detections found matching your filters.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if results %}
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <nav aria-label="Gallery pagination">
+                    <ul class="pagination">
+                        {% if has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('gallery', page=page-1, per_page=per_page, bird_only='true' if bird_only else None, with_species='true' if with_species else None) }}">
+                                    <i class="bi bi-chevron-left"></i> Previous
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#"><i class="bi bi-chevron-left"></i> Previous</a>
+                            </li>
+                        {% endif %}
+
+                        {% for p in range(max(1, page-2), min(total_pages+1, page+3)) %}
+                            <li class="page-item {{ 'active' if p == page else '' }}">
+                                <a class="page-link" href="{{ url_for('gallery', page=p, per_page=per_page, bird_only='true' if bird_only else None, with_species='true' if with_species else None) }}">
+                                    {{ p }}
+                                </a>
+                            </li>
+                        {% endfor %}
+
+                        {% if has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('gallery', page=page+1, per_page=per_page, bird_only='true' if bird_only else None, with_species='true' if with_species else None) }}">
+                                    Next <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">Next <i class="bi bi-chevron-right"></i></a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<footer class="footer mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Bird Detection System</h5>
+                <p>A Raspberry Pi and Jetson Nano-based system for detecting and identifying birds in your backyard.</p>
+            </div>
+            <div class="col-md-3">
+                <h5>Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="/" class="text-light">Home</a></li>
+                    <li><a href="/gallery" class="text-light">Gallery</a></li>
+                    <li><a href="/api/stats" class="text-light">API</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h5>API</h5>
+                <ul class="list-unstyled">
+                    <li><a href="/api/results" class="text-light">Results</a></li>
+                    <li><a href="/api/stats" class="text-light">Statistics</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-12 text-center">
+                <p>&copy; 2023 Bird Detection System. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

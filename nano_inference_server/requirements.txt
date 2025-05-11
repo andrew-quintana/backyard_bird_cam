@@ -1,0 +1,14 @@
+flask==2.2.3
+flask-cors==3.0.10
+watchdog==2.3.1
+numpy==1.24.2
+opencv-python==4.7.0.72
+opencv-contrib-python==4.7.0.72
+pillow==9.4.0
+tensorflow==2.12.0
+scikit-learn==1.2.2
+werkzeug==2.2.3
+requests==2.28.2
+gunicorn==20.1.0
+python-dotenv==1.0.0
+pyyaml==6.0 
