@@ -33,4 +33,8 @@ sudo systemctl status backyard_bird_cam@$CURRENT_USER.service
 echo "Services installed and started for user: ${CURRENT_USER}"
 echo "To check pigpiod status: sudo systemctl status pigpiod.service"
 echo "To check camera status: sudo systemctl status backyard_bird_cam@${CURRENT_USER}.service"
-echo "To view camera logs: sudo journalctl -u backyard_bird_cam@${CURRENT_USER}.service -f" 
+echo "To view camera logs: sudo journalctl -u backyard_bird_cam@${CURRENT_USER}.service -f"
+
+# Show live logs
+echo "Showing live logs (press Ctrl+C to exit)..."
+sudo journalctl -u backyard_bird_cam@${CURRENT_USER}.service -f 
