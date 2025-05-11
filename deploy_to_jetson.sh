@@ -6,7 +6,7 @@ set -e  # Exit on error
 
 # Configuration
 JETSON_USER="qnest"
-JETSON_HOST="192.168.5.164"
+JETSON_HOST="{ip_address}"
 JETSON_ALIAS="jetson"
 TARGET_DIR="/home/${JETSON_USER}/projects/nano_inference_server"
 LOCAL_FILES=("jetson_compatibility.py" "jetson_server.py" "test_jetson_imports.py" "setup_tensorflow_jetson.sh")
@@ -37,7 +37,7 @@ if ! ssh -q -o BatchMode=yes -o ConnectTimeout=5 $JETSON_ALIAS exit; then
     echo "Make sure the Jetson Nano is powered on and your SSH alias is configured."
     echo "Example ~/.ssh/config entry:"
     echo "Host jetson"
-    echo "    HostName 192.168.5.164"
+    echo "    HostName {ip_address}"
     echo "    User qnest"
     echo "    IdentityFile ~/.ssh/id_rsa"
     exit 1
