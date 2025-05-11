@@ -1,0 +1,26 @@
+/* Custom styles for the slider handles */
+.slider-handle {
+  height: 24px !important;
+  width: 24px !important;
+  background-color: #8bc34a !important;
+  border: 2px solid white !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  cursor: pointer !important;
+}
+
+.slider-handle:hover {
+  background-color: #7cb342 !important;
+}
+
+.slider-handle:active {
+  background-color: #689f38 !important;
+}
+
+/* Label styles */
+.date-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #558b2f;
+  text-align: center;
+  white-space: nowrap;
+}

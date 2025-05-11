@@ -11,7 +11,7 @@ setup(
     name="bird_cam",
     version="1.0.0",
     author="Bird Camera Project",
-    author_email="sendaqai",
+    author_email="sendaqmail@gmail.com",
     description="A Raspberry Pi-based camera system for bird photography",
     long_description=long_description,
     long_description_content_type="text/markdown",

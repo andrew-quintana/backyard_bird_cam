@@ -1,0 +1,97 @@
+@import "./slider-custom.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 100 100% 98%;
+    --foreground: 122 39% 26%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 122 39% 26%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 122 39% 26%;
+
+    --primary: 88 50% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 88 43% 90%;
+    --secondary-foreground: 122 39% 26%;
+
+    --muted: 88 43% 90%;
+    --muted-foreground: 122 25% 40%;
+
+    --accent: 88 43% 90%;
+    --accent-foreground: 122 39% 26%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 88 30% 85%;
+    --input: 88 30% 85%;
+    --ring: 122 39% 26%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 122 39% 10%;
+    --foreground: 0 0% 98%;
+
+    --card: 122 39% 15%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 122 39% 15%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 88 50% 53%;
+    --primary-foreground: 122 39% 10%;
+
+    --secondary: 122 39% 20%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 122 39% 20%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 122 39% 20%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 122 39% 25%;
+    --input: 122 39% 25%;
+    --ring: 88 50% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Spring-inspired custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f8e9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #aed581;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8bc34a;
+}

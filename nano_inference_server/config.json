@@ -1,0 +1,27 @@
+{
+    "model_path": "models/bird_model.pb",
+    "model_type": "mobilenet",
+    "confidence_threshold": 0.5,
+    "device": "cuda",
+    
+    "input_dir": "data/input",
+    "output_dir": "data/output",
+    "max_results": 10000,
+    "organize_by_date": true,
+    
+    "file_patterns": [".*\\.(jpg|jpeg|png)$"],
+    
+    "host": "0.0.0.0",
+    "port": 5000,
+    "debug": false,
+    "access_key": null,
+    "rate_limit": 100,
+    
+    "use_v0_ui": true,
+    "v0_ui_primary": false,
+    
+    "cloudflared": {
+        "enabled": false,
+        "tunnel_token": null
+    }
+} 
