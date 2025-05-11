@@ -76,16 +76,16 @@ From your local computer, use the transfer script to copy the images from the Pi
 # Navigate to your local project directory
 cd /path/to/your/local/bird_cam
 
-# Replace "fizz" with your Pi username and the IP with your Pi's IP address
-./scripts/transfer_images.sh fizz 192.168.1.100
+# Replace with your Pi username and the IP with your Pi's IP address
+./scripts/transfer_images.sh {username} {raspberry_pi_ip_address}
 ```
 
 **Important notes**:
-- Make sure you use the correct username for your Raspberry Pi. The default username is often "pi" but in some setups it may be different (like "fizz").
+- Make sure you use the correct username for your Raspberry Pi. The default username is often "pi" but in some setups it may be different (like "{username}").
 - The script uses absolute paths, so the images will be saved to `[project_root]/data/remote_photos` regardless of where you run the script from.
 - You can specify a custom destination path as the fourth parameter:
   ```bash
-  ./scripts/transfer_images.sh fizz 192.168.1.100 /home/fizz/backyard_bird_cam/data/photos /absolute/path/to/destination
+  ./scripts/transfer_images.sh {username} {raspberry_pi_ip_address} /home/{username}/backyard_bird_cam/data/photos /absolute/path/to/destination
   ```
 
 The transfer script will:
@@ -145,4 +145,4 @@ The `sleep 30` gives the system time to fully boot before starting the camera sc
 5. **Transfer script not finding images**
    - Make sure you're using the correct username when running the transfer script
    - The default path is `/home/username/backyard_bird_cam/data/photos/`
-   - You can specify a custom path: `./scripts/transfer_images.sh username ip_address /custom/path/to/photos` 
+   - You can specify a custom path: `./scripts/transfer_images.sh username {raspberry_pi_ip_address} /custom/path/to/photos` 
