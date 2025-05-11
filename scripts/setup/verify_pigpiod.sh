@@ -30,6 +30,13 @@ echo "Checking pigpiod status..."
 sudo killall pigpiod 2>/dev/null
 sleep 2
 
+# Check if port 8888 is already in use
+echo "Checking if port 8888 is available..."
+if sudo netstat -tulpn 2>/dev/null | grep :8888 > /dev/null; then
+    echo "WARNING: Port 8888 is already in use!"
+    sudo netstat -tulpn 2>/dev/null | grep :8888
+fi
+
 # Start pigpiod with verbose output
 echo "Starting pigpiod..."
 sudo pigpiod -v
@@ -40,6 +47,12 @@ sleep 2
 # Check if it's running
 if check_pigpiod; then
     echo "pigpiod process is running"
+    # Check if it's listening on port 8888
+    if sudo netstat -tulpn 2>/dev/null | grep :8888 > /dev/null; then
+        echo "pigpiod is listening on port 8888"
+    else
+        echo "WARNING: pigpiod is not listening on port 8888!"
+    fi
 else
     echo "Failed to start pigpiod process"
     exit 1
@@ -51,5 +64,10 @@ if check_connection; then
     exit 0
 else
     echo "pigpiod is running but not responding"
+    # Try to get more information about the process
+    echo "Process details:"
+    ps aux | grep pigpiod | grep -v grep
+    echo "Port status:"
+    sudo netstat -tulpn 2>/dev/null | grep :8888 || echo "No process listening on port 8888"
     exit 1
 fi 
