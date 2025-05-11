@@ -1,38 +1,34 @@
-# Bird Camera Project Documentation
+# Backyard Bird Cam Documentation
 
-Welcome to the Bird Camera project documentation. This directory contains comprehensive guides and documentation for all aspects of the project.
+Welcome to the Backyard Bird Cam project! This system enables automated bird detection, photo capture, and transfer using a Raspberry Pi and a PIR motion sensor. The project is designed for easy setup and operation on both Mac and Windows environments.
 
-## Quick Links
+## Quick Start
 
-- [Project Roadmap](project_roadmap.md) - Overall project plan and current status
-- [Hardware Testing Guide](hardware_testing_guide.md) - Comprehensive guide for testing and calibrating hardware
-- [Cloud Integration Guide](cloud_integration_guide.md) - How to integrate with cloud services for storage and UI
+- **For full Raspberry Pi setup and photo transfer instructions, see:**
+  - [`README_pi_camera_setup.md`](./README_pi_camera_setup.md)
 
-## Project Overview
+## Project Structure
 
-The Bird Camera project uses a Raspberry Pi with a camera module and PIR motion sensor to capture photos of birds. It can run standalone or integrate with cloud services for storage, machine learning classification, and web-based viewing.
+- `pi_bird_cam/` — All Raspberry Pi camera and sensor scripts
+- `nano_inference_server/` — (If present) Jetson Nano or inference server code
+- `scripts/` — Utility and deployment scripts
+- `docs/` — Documentation (this folder)
+- `data/` — Photo and data storage
 
-## Directory Structure
+## Features
+- Motion-triggered, high-res photo capture
+- Automatic or manual photo transfer to your computer (Mac/Windows)
+- Easy installation and operation
+- Customizable camera and sensor parameters
 
-The project is organized into the following directories:
+## Documentation
+- **Pi Camera Setup & Photo Transfer:** [`README_pi_camera_setup.md`](./README_pi_camera_setup.md)
+- **Other guides and troubleshooting:** See additional markdown files in this folder
 
-- `src/` - Main source code
-  - `camera/` - Camera handling code
-  - `sensors/` - Sensor interfaces (PIR motion sensor)
-  - `config/` - Configuration management
-  - `storage/` - Photo storage handling
-  - `uploader/` - Cloud upload functionality
-  - `inference/` - Machine learning integration
+## Contributing
+- Please use feature branches for new work (see [Git SOP](https://github.com/andrew-quintana/prompt_sop/blob/main/git_testing_protocol.md))
+- Submit pull requests to the `integration` branch
 
-- `scripts/` - Helper scripts for installation and management
-  - `service/` - systemd service files
-  - `setup/` - System setup scripts
-  - `tools/` - Utility tools
+---
 
-- `tests/` - Test files for all components
-
-- `docs/` - Documentation (you are here)
-
-## Getting Started
-
-See the main [README.md](../README.md) at the project root for installation and getting started instructions. 
+For any questions or issues, please refer to the setup guide or open an issue on GitHub. 

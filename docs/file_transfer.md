@@ -9,7 +9,7 @@ Use the `transfer_images.sh` script when you want to run a command on your Mac/P
 ```bash
 # Run this ON YOUR MAC/PC
 cd /Users/aq_home/1Projects/bird_cam
-./scripts/transfer_images.sh fizz {ip_address}
+./scripts/transfer_images.sh {username} {raspberry_pi_ip_address}
 ```
 
 This script:
@@ -26,7 +26,7 @@ Use the `send_photos.sh` script when you want to run a command on the Pi to uplo
 ```bash
 # Run this ON THE PI
 cd ~/backyard_bird_cam
-./scripts/send_photos.sh aq_home {ip_address}
+./scripts/send_photos.sh {username} {your_computer_ip_address}
 ```
 
 This script:
