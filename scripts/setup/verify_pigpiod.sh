@@ -42,9 +42,16 @@ echo "Checking permissions..."
 ls -l /dev/gpiomem 2>/dev/null || echo "WARNING: /dev/gpiomem does not exist"
 groups $USER | grep -q gpio && echo "User is in gpio group" || echo "WARNING: User is not in gpio group"
 
+# Check system information
+echo "System information:"
+uname -a
+echo "Kernel modules:"
+lsmod | grep -E 'bcm|gpio' || echo "No relevant kernel modules found"
+
 # Start pigpiod with verbose output and log to file
 echo "Starting pigpiod..."
-sudo pigpiod -v > /tmp/pigpiod.log 2>&1
+# Try with explicit port and host
+sudo pigpiod -v -x 8888 -l > /tmp/pigpiod.log 2>&1
 PIGPID=$!
 
 # Wait for it to start
@@ -53,6 +60,9 @@ sleep 2
 # Check if it's running
 if check_pigpiod; then
     echo "pigpiod process is running (PID: $PIGPID)"
+    # Check process details
+    echo "Process details:"
+    ps -f -p $PIGPID
     # Check if it's listening on port 8888
     if sudo netstat -tulpn 2>/dev/null | grep :8888 > /dev/null; then
         echo "pigpiod is listening on port 8888"
@@ -60,11 +70,15 @@ if check_pigpiod; then
         echo "WARNING: pigpiod is not listening on port 8888!"
         echo "Checking pigpiod logs:"
         cat /tmp/pigpiod.log
+        echo "Checking system logs for pigpiod:"
+        sudo journalctl -u pigpiod.service -n 50 --no-pager
     fi
 else
     echo "Failed to start pigpiod process"
     echo "Checking pigpiod logs:"
     cat /tmp/pigpiod.log
+    echo "Checking system logs for pigpiod:"
+    sudo journalctl -u pigpiod.service -n 50 --no-pager
     exit 1
 fi
 
@@ -81,5 +95,7 @@ else
     sudo netstat -tulpn 2>/dev/null | grep :8888 || echo "No process listening on port 8888"
     echo "Checking pigpiod logs:"
     cat /tmp/pigpiod.log
+    echo "Checking system logs for pigpiod:"
+    sudo journalctl -u pigpiod.service -n 50 --no-pager
     exit 1
 fi 
