@@ -77,7 +77,7 @@ From your local computer, use the transfer script to copy the images from the Pi
 cd /path/to/your/local/bird_cam
 
 # Replace "fizz" with your Pi username and the IP with your Pi's IP address
-./scripts/transfer_images.sh fizz 192.168.1.100
+./scripts/transfer_images.sh fizz {ip_address}
 ```
 
 **Important notes**:
@@ -85,7 +85,7 @@ cd /path/to/your/local/bird_cam
 - The script uses absolute paths, so the images will be saved to `[project_root]/data/remote_photos` regardless of where you run the script from.
 - You can specify a custom destination path as the fourth parameter:
   ```bash
-  ./scripts/transfer_images.sh fizz 192.168.1.100 /home/fizz/backyard_bird_cam/data/photos /absolute/path/to/destination
+  ./scripts/transfer_images.sh fizz {ip_address} /home/fizz/backyard_bird_cam/data/photos /absolute/path/to/destination
   ```
 
 The transfer script will:

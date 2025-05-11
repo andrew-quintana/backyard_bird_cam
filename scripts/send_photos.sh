@@ -5,7 +5,7 @@
 
 # Default values
 REMOTE_USER=${1:-aq_home}
-REMOTE_IP=${2:-192.168.5.144}  # Change this to your Mac's IP
+REMOTE_IP=${2:-{ip_address}}  # Change this to your Mac's IP
 REMOTE_DIR=${3:-"1Projects/bird_cam/data/remote_photos"}
 LOCAL_PHOTOS_DIR="$HOME/backyard_bird_cam/data/photos"
 
