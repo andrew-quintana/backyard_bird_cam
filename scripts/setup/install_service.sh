@@ -3,6 +3,9 @@
 # Get the current user
 CURRENT_USER=$(whoami)
 
+# Set up permissions first
+"$(dirname "$0")/setup_permissions.sh"
+
 # Install pigpiod service
 sudo cp "$(dirname "$0")/../service/pigpiod.service" /etc/systemd/system/pigpiod.service
 sudo systemctl daemon-reload
