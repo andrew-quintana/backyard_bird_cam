@@ -1,12 +1,12 @@
 [Unit]
 Description=Backyard Bird Camera Service
-After=network.target pigpiod.service
+After=network.target
+Requires=pigpiod.service
 
 [Service]
 Type=simple
 User=%i
 WorkingDirectory=/home/%i/backyard_bird_cam
-ExecStartPre=/usr/bin/sudo /usr/bin/pigpiod
 ExecStart=/usr/bin/python3 /home/%i/backyard_bird_cam/scripts/simple_pir_trigger.py --sampling_rate 0.05 --burst_quantity 5 --burst_frequency 0.3
 Restart=always
 RestartSec=10
