@@ -1,50 +1,32 @@
 [Unit]
 Description=Bird Camera Trigger Service
 After=pigpiod.service
-Requires=pigpiod.service
+Wants=pigpiod.service
 
 [Service]
 Type=simple
-# Use the user that runs the service
 User=%i
 Group=%i
-# Use explicit path expansion
 WorkingDirectory=/home/%i/backyard_bird_cam
 ExecStart=/usr/bin/python3 /home/%i/backyard_bird_cam/scripts/simple_pir_trigger.py
-# Add environment variables for debugging
-Environment=PYTHONUNBUFFERED=1
-Environment=SERVICE_DEBUG=1
-# Ensure proper permissions
-UMask=0022
-# Restart configuration
 Restart=always
-RestartSec=30
-# Output directly to journal
+RestartSec=10
 StandardOutput=journal
 StandardError=journal
-# Ensure proper directory access
-ReadOnlyDirectories=/
-ReadWriteDirectories=/home/%i
-ReadWriteDirectories=/home/%i/backyard_bird_cam
-ReadWriteDirectories=/home/%i/backyard_bird_cam/images
-# More permissive security context
+SyslogIdentifier=bird-camera
+Environment=PYTHONUNBUFFERED=1
+Environment=DEBUG=1
+
+# Security settings
 NoNewPrivileges=no
 ProtectHome=no
 ProtectSystem=no
-PrivateTmp=no
-# Additional security settings
-CapabilityBoundingSet=
-AmbientCapabilities=
-DynamicUser=no
+ReadOnlyDirectories=/
+ReadWriteDirectories=/home/%i/backyard_bird_cam
+ReadWriteDirectories=/home/%i/backyard_bird_cam/images
+
+# Hardware access
 SupplementaryGroups=gpio video
-# Add explicit directory permissions
-InaccessibleDirectories=/home
-InaccessibleDirectories=/home/*
-InaccessibleDirectories=/home/%i/*
-InaccessibleDirectories=/home/%i/backyard_bird_cam/*
-InaccessibleDirectories=/home/%i/backyard_bird_cam/images/*
-InaccessibleDirectories=/home/%i/backyard_bird_cam/scripts/*
-InaccessibleDirectories=/home/%i/backyard_bird_cam/logs/*
 
 [Install]
 WantedBy=multi-user.target 

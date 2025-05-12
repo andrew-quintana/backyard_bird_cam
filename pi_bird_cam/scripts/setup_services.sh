@@ -1,86 +1,92 @@
 #!/bin/bash
 
-# Exit on any error
-set -e
+# Get the actual user who ran sudo
+ACTUAL_USER=$(logname)
+ACTUAL_HOME=$(eval echo ~$ACTUAL_USER)
 
 echo "Setting up bird camera services..."
+echo "Current user: $ACTUAL_USER"
+echo "Home directory: $ACTUAL_HOME"
 
-# Get the current user and home directory
-CURRENT_USER=$(whoami)
-CURRENT_HOME=$(eval echo ~$CURRENT_USER)
-echo "Current user: $CURRENT_USER"
-echo "Home directory: $CURRENT_HOME"
+# Check if running as root
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run this script with sudo"
+    exit 1
+fi
 
-# Verify directory structure
+# Check if we have a valid user
+if [ -z "$ACTUAL_USER" ]; then
+    echo "Error: Could not determine the actual user"
+    exit 1
+fi
+
+# Check if the user's home directory exists
+if [ ! -d "$ACTUAL_HOME" ]; then
+    echo "Error: Home directory $ACTUAL_HOME does not exist"
+    exit 1
+fi
+
+# Check if the backyard_bird_cam directory exists
+if [ ! -d "$ACTUAL_HOME/backyard_bird_cam" ]; then
+    echo "Error: Directory $ACTUAL_HOME/backyard_bird_cam does not exist"
+    exit 1
+fi
+
 echo "Checking directory structure..."
-if [ ! -d "$CURRENT_HOME/backyard_bird_cam" ]; then
-    echo "Creating backyard_bird_cam directory in $CURRENT_HOME..."
-    mkdir -p "$CURRENT_HOME/backyard_bird_cam"
-fi
-
-# Ensure proper permissions
 echo "Setting up permissions..."
-# First check parent directory permissions
-echo "Checking parent directory permissions..."
-ls -la "$CURRENT_HOME"
 
-# Set very permissive directory permissions
-echo "Setting directory permissions..."
-chmod 777 "$CURRENT_HOME/backyard_bird_cam"
+# Set directory permissions
+chmod 777 "$ACTUAL_HOME/backyard_bird_cam"
 
-# Then set ownership of all files except .env and virtual environment
-echo "Setting ownership of files..."
-find "$CURRENT_HOME/backyard_bird_cam" \
-    -not -path "*/\.*" \
-    -not -path "*/\.venv/*" \
-    -not -path "*/venv/*" \
-    -not -name ".env" \
-    -exec chown $CURRENT_USER:$CURRENT_USER {} \;
+# Set ownership of files (excluding .env and virtual environments)
+find "$ACTUAL_HOME/backyard_bird_cam" -type f -not -path "*/\.*" -not -path "*/\.venv/*" -not -path "*/venv/*" -exec chown $ACTUAL_USER:$ACTUAL_USER {} \;
+find "$ACTUAL_HOME/backyard_bird_cam" -type d -not -path "*/\.*" -not -path "*/\.venv/*" -not -path "*/venv/*" -exec chown $ACTUAL_USER:$ACTUAL_USER {} \;
 
-# Set permissions for .env if it exists
-if [ -f "$CURRENT_HOME/backyard_bird_cam/.env" ]; then
-    echo "Setting permissions for .env file..."
-    sudo chown $CURRENT_USER:$CURRENT_USER "$CURRENT_HOME/backyard_bird_cam/.env"
-    chmod 600 "$CURRENT_HOME/backyard_bird_cam/.env"
+# Set permissions for .env file if it exists
+if [ -f "$ACTUAL_HOME/backyard_bird_cam/.env" ]; then
+    chmod 600 "$ACTUAL_HOME/backyard_bird_cam/.env"
+    chown $ACTUAL_USER:$ACTUAL_USER "$ACTUAL_HOME/backyard_bird_cam/.env"
 fi
 
-# Verify script exists
-SCRIPT_PATH="$CURRENT_HOME/backyard_bird_cam/scripts/simple_pir_trigger.py"
+# Verify the script exists
+SCRIPT_PATH="$ACTUAL_HOME/backyard_bird_cam/scripts/simple_pir_trigger.py"
 if [ ! -f "$SCRIPT_PATH" ]; then
     echo "Error: Script not found at $SCRIPT_PATH"
     exit 1
 fi
+
 echo "Found script at: $SCRIPT_PATH"
 
-# Ensure script is executable
+# Make the script executable
 chmod +x "$SCRIPT_PATH"
 
-# Remove any custom pigpiod service to use system default
-if [ -f /etc/systemd/system/pigpiod.service ]; then
-    echo "Removing custom pigpiod service..."
-    sudo rm /etc/systemd/system/pigpiod.service
+echo "Installing bird-camera service..."
+
+# Remove any custom pigpiod service if it exists
+if [ -f "/etc/systemd/system/pigpiod.service" ]; then
+    systemctl stop pigpiod.service
+    systemctl disable pigpiod.service
+    rm /etc/systemd/system/pigpiod.service
 fi
 
-# Copy bird-camera service
-echo "Installing bird-camera service..."
-sudo cp "$(dirname "$0")/../services/bird-camera@.service" /etc/systemd/system/
+# Copy the service file
+cp "$ACTUAL_HOME/backyard_bird_cam/pi_bird_cam/services/bird-camera@.service" /etc/systemd/system/
 
-# Reload systemd
 echo "Reloading systemd..."
-sudo systemctl daemon-reload
+systemctl daemon-reload
 
-# Enable and start services
 echo "Enabling and starting services..."
-sudo systemctl enable pigpiod
-sudo systemctl start pigpiod
-sudo systemctl enable bird-camera@$CURRENT_USER
-sudo systemctl start bird-camera@$CURRENT_USER
+systemctl enable pigpiod.service
+systemctl start pigpiod.service
+systemctl enable bird-camera@$ACTUAL_USER.service
+systemctl start bird-camera@$ACTUAL_USER.service
 
 echo "Services setup complete!"
 echo "Checking service status..."
-sudo systemctl status pigpiod bird-camera@$CURRENT_USER
+systemctl status pigpiod.service
+systemctl status bird-camera@$ACTUAL_USER.service
 
 echo -e "\nTo monitor the camera service in real-time, use:"
-echo "   sudo journalctl -u bird-camera@$CURRENT_USER -f"
+echo "   sudo journalctl -u bird-camera@$ACTUAL_USER -f"
 echo -e "\nTo see the latest pictures taken:"
-echo "   ls -ltr $CURRENT_HOME/backyard_bird_cam/images/" 
+echo "   ls -ltr $ACTUAL_HOME/backyard_bird_cam/images/" 
