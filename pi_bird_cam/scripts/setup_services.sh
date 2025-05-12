@@ -20,8 +20,19 @@ fi
 
 # Ensure proper permissions
 echo "Setting up permissions..."
+# First set directory permissions
 chmod 755 "$CURRENT_HOME/backyard_bird_cam"
-chown -R $CURRENT_USER:$CURRENT_USER "$CURRENT_HOME/backyard_bird_cam"
+
+# Then set ownership of all files except .env
+echo "Setting ownership of files..."
+find "$CURRENT_HOME/backyard_bird_cam" -not -name ".env" -exec chown $CURRENT_USER:$CURRENT_USER {} \;
+
+# Set permissions for .env if it exists
+if [ -f "$CURRENT_HOME/backyard_bird_cam/.env" ]; then
+    echo "Setting permissions for .env file..."
+    sudo chown $CURRENT_USER:$CURRENT_USER "$CURRENT_HOME/backyard_bird_cam/.env"
+    chmod 600 "$CURRENT_HOME/backyard_bird_cam/.env"
+fi
 
 # Verify script exists
 SCRIPT_PATH="$CURRENT_HOME/backyard_bird_cam/scripts/simple_pir_trigger.py"
