@@ -153,11 +153,16 @@ class CameraHandler:
             "AfMode": controls.AfModeEnum.Manual,
             "LensPosition": lens_position,
             "AwbMode": controls.AwbModeEnum.Auto,
-            "AeMode": controls.AeModeEnum.Auto
+            "AeMeteringMode": controls.AeMeteringModeEnum.Matrix,
+            "AeExposureMode": controls.AeExposureModeEnum.Normal,
+            "FrameDurationLimits": (33333, 33333)  # 30fps frame rate
         }
         
         self.logger.info(f"Setting camera controls: {controls_dict}")
         self.camera.set_controls(controls_dict)
+        
+        # Allow time for auto exposure to settle
+        time.sleep(0.5)
         
         # Verify the settings were applied
         current_controls = self.camera.camera_controls
@@ -165,9 +170,6 @@ class CameraHandler:
         
         self.logger.info(f"Camera configured with focus distance of {self.focus_distance_inches} inches "
                         f"(lens position: {lens_position:.2f})")
-        
-        # Allow time for camera to warm up
-        time.sleep(0.5)
         
     def take_photo(self, output_path):
         """Take a photo and save it to the specified path.
