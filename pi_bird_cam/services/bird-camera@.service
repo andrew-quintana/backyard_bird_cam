@@ -35,6 +35,11 @@ CapabilityBoundingSet=
 AmbientCapabilities=
 DynamicUser=no
 SupplementaryGroups=gpio video
+# Add explicit directory permissions
+ReadOnlyDirectories=/
+ReadWriteDirectories=/home/%i
+ReadWriteDirectories=/home/%i/backyard_bird_cam
+ReadWriteDirectories=/home/%i/backyard_bird_cam/images
 
 [Install]
 WantedBy=multi-user.target 
