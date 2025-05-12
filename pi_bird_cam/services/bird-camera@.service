@@ -15,8 +15,9 @@ Environment=PYTHONUNBUFFERED=1
 Environment=SERVICE_DEBUG=1
 Restart=always
 RestartSec=30
-StandardOutput=append:/var/log/bird-camera.log
-StandardError=append:/var/log/bird-camera.error.log
+# Use append mode for logs
+StandardOutput=append:/home/%i/backyard_bird_cam/logs/camera.log
+StandardError=append:/home/%i/backyard_bird_cam/logs/camera.error.log
 
 [Install]
 WantedBy=multi-user.target 

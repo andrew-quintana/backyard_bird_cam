@@ -18,6 +18,12 @@ if [ ! -d "$CURRENT_HOME/backyard_bird_cam" ]; then
     mkdir -p "$CURRENT_HOME/backyard_bird_cam"
 fi
 
+# Create logs directory
+echo "Setting up logs directory..."
+mkdir -p "$CURRENT_HOME/backyard_bird_cam/logs"
+touch "$CURRENT_HOME/backyard_bird_cam/logs/camera.log" "$CURRENT_HOME/backyard_bird_cam/logs/camera.error.log"
+chmod 644 "$CURRENT_HOME/backyard_bird_cam/logs/camera.log" "$CURRENT_HOME/backyard_bird_cam/logs/camera.error.log"
+
 # Verify script exists
 SCRIPT_PATH="$CURRENT_HOME/backyard_bird_cam/scripts/simple_pir_trigger.py"
 if [ ! -f "$SCRIPT_PATH" ]; then
@@ -35,11 +41,6 @@ fi
 # Copy bird-camera service
 echo "Installing bird-camera service..."
 sudo cp "$(dirname "$0")/../services/bird-camera@.service" /etc/systemd/system/
-
-# Create log files with proper permissions
-echo "Setting up log files..."
-sudo touch /var/log/bird-camera.log /var/log/bird-camera.error.log
-sudo chown $CURRENT_USER:$CURRENT_USER /var/log/bird-camera.log /var/log/bird-camera.error.log
 
 # Reload systemd
 echo "Reloading systemd..."
@@ -60,8 +61,8 @@ echo -e "\nTo monitor the camera service in real-time, you can use any of these 
 echo "1. View all logs (including systemd messages):"
 echo "   sudo journalctl -u bird-camera@$CURRENT_USER -f"
 echo "2. View only the application output:"
-echo "   tail -f /var/log/bird-camera.log"
+echo "   tail -f $CURRENT_HOME/backyard_bird_cam/logs/camera.log"
 echo "3. View only errors:"
-echo "   tail -f /var/log/bird-camera.error.log"
+echo "   tail -f $CURRENT_HOME/backyard_bird_cam/logs/camera.error.log"
 echo -e "\nTo see the latest pictures taken:"
 echo "   ls -ltr $CURRENT_HOME/backyard_bird_cam/images/" 
