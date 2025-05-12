@@ -43,7 +43,7 @@ ACTUAL_USER=$(logname)
 ACTUAL_HOME=$(eval echo ~$ACTUAL_USER)
 
 # Source directory for pictures
-SOURCE_DIR="$ACTUAL_HOME/backyard_bird_cam/images"
+SOURCE_DIR="$ACTUAL_HOME/backyard_bird_cam/data/photos"
 
 # Check if source directory exists
 if [ ! -d "$SOURCE_DIR" ]; then
