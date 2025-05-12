@@ -19,7 +19,7 @@ Environment=DEBUG=1
 Environment=LOG_LEVEL=DEBUG
 Environment=LOG_FORMAT=%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
-# Security settings
+# Security Settings
 NoNewPrivileges=no
 ProtectHome=no
 ProtectSystem=no
@@ -29,15 +29,15 @@ ReadWriteDirectories=/home/%i
 ReadWriteDirectories=/home/%i/backyard_bird_cam
 ReadWriteDirectories=/home/%i/backyard_bird_cam/images
 
-# Hardware access
+# Hardware Access
 SupplementaryGroups=gpio video
 
-# Additional security settings
+# Additional Security Settings
 CapabilityBoundingSet=
 AmbientCapabilities=
 DynamicUser=no
 
-# Logging configuration
+# Logging Configuration
 LogLevelMax=debug
 LogExtraFields=uid=%u gid=%g
 LogRateLimitIntervalSec=0
