@@ -16,6 +16,8 @@ StandardError=journal
 SyslogIdentifier=bird-camera
 Environment=PYTHONUNBUFFERED=1
 Environment=DEBUG=1
+Environment=LOG_LEVEL=DEBUG
+Environment=LOG_FORMAT=%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 # Security settings
 NoNewPrivileges=no
@@ -34,6 +36,12 @@ SupplementaryGroups=gpio video
 CapabilityBoundingSet=
 AmbientCapabilities=
 DynamicUser=no
+
+# Logging configuration
+LogLevelMax=debug
+LogExtraFields=uid=%u gid=%g
+LogRateLimitIntervalSec=0
+LogRateLimitBurst=0
 
 [Install]
 WantedBy=multi-user.target 
