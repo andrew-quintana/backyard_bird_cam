@@ -25,6 +25,11 @@ StandardError=journal
 # Ensure proper directory access
 ReadWriteDirectories=/home/%i/backyard_bird_cam
 ReadWriteDirectories=/home/%i/backyard_bird_cam/images
+# More permissive security context
+NoNewPrivileges=no
+ProtectHome=no
+ProtectSystem=no
+PrivateTmp=no
 
 [Install]
 WantedBy=multi-user.target 

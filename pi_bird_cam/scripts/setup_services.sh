@@ -20,8 +20,8 @@ fi
 
 # Ensure proper permissions
 echo "Setting up permissions..."
-# First set directory permissions
-chmod 755 "$CURRENT_HOME/backyard_bird_cam"
+# Set very permissive directory permissions
+chmod 777 "$CURRENT_HOME/backyard_bird_cam"
 
 # Then set ownership of all files except .env and virtual environment
 echo "Setting ownership of files..."
