@@ -149,12 +149,19 @@ class CameraHandler:
         lens_position = self._convert_inches_to_lens_position(self.focus_distance_inches)
         
         # Set manual focus mode and focus distance
-        self.camera.set_controls({
+        controls_dict = {
             "AfMode": controls.AfModeEnum.Manual,
             "LensPosition": lens_position,
             "AwbMode": controls.AwbModeEnum.Auto,
             "AeEnable": True
-        })
+        }
+        
+        self.logger.info(f"Setting camera controls: {controls_dict}")
+        self.camera.set_controls(controls_dict)
+        
+        # Verify the settings were applied
+        current_controls = self.camera.camera_controls
+        self.logger.info(f"Current camera controls: {current_controls}")
         
         self.logger.info(f"Camera configured with focus distance of {self.focus_distance_inches} inches "
                         f"(lens position: {lens_position:.2f})")
