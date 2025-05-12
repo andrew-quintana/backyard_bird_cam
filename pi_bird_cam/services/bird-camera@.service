@@ -7,8 +7,9 @@ Requires=pigpiod.service
 Type=simple
 # Use the user that runs the service
 User=%i
-WorkingDirectory=%h/backyard_bird_cam
-ExecStart=/usr/bin/python3 %h/backyard_bird_cam/scripts/simple_pir_trigger.py
+# Use explicit path expansion
+WorkingDirectory=/home/%i/backyard_bird_cam
+ExecStart=/usr/bin/python3 /home/%i/backyard_bird_cam/scripts/simple_pir_trigger.py
 # Add environment variables for debugging
 Environment=PYTHONUNBUFFERED=1
 Environment=SERVICE_DEBUG=1
