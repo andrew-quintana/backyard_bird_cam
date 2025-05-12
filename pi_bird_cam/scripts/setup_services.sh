@@ -18,6 +18,11 @@ if [ ! -d "$CURRENT_HOME/backyard_bird_cam" ]; then
     mkdir -p "$CURRENT_HOME/backyard_bird_cam"
 fi
 
+# Ensure proper permissions
+echo "Setting up permissions..."
+chmod 755 "$CURRENT_HOME/backyard_bird_cam"
+chown -R $CURRENT_USER:$CURRENT_USER "$CURRENT_HOME/backyard_bird_cam"
+
 # Verify script exists
 SCRIPT_PATH="$CURRENT_HOME/backyard_bird_cam/scripts/simple_pir_trigger.py"
 if [ ! -f "$SCRIPT_PATH" ]; then

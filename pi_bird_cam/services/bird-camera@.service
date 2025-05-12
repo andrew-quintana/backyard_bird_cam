@@ -7,12 +7,16 @@ Requires=pigpiod.service
 Type=simple
 # Use the user that runs the service
 User=%i
+Group=%i
 # Use explicit path expansion
 WorkingDirectory=/home/%i/backyard_bird_cam
 ExecStart=/usr/bin/python3 /home/%i/backyard_bird_cam/scripts/simple_pir_trigger.py
 # Add environment variables for debugging
 Environment=PYTHONUNBUFFERED=1
 Environment=SERVICE_DEBUG=1
+# Ensure proper permissions
+UMask=0022
+# Restart configuration
 Restart=always
 RestartSec=30
 # Output directly to journal
