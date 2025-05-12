@@ -30,6 +30,11 @@ NoNewPrivileges=no
 ProtectHome=no
 ProtectSystem=no
 PrivateTmp=no
+# Additional security settings
+CapabilityBoundingSet=
+AmbientCapabilities=
+DynamicUser=no
+SupplementaryGroups=gpio video
 
 [Install]
 WantedBy=multi-user.target 

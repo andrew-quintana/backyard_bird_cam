@@ -20,7 +20,12 @@ fi
 
 # Ensure proper permissions
 echo "Setting up permissions..."
+# First check parent directory permissions
+echo "Checking parent directory permissions..."
+ls -la "$CURRENT_HOME"
+
 # Set very permissive directory permissions
+echo "Setting directory permissions..."
 chmod 777 "$CURRENT_HOME/backyard_bird_cam"
 
 # Then set ownership of all files except .env and virtual environment
