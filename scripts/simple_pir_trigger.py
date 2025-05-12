@@ -25,8 +25,8 @@ import RPi.GPIO as GPIO
 DEFAULT_OUTPUT_DIR = "data/photos"
 DEFAULT_PIR_PIN = 4
 DEFAULT_COOLDOWN = 0  # seconds between motion triggers
-DEFAULT_BURST_COUNT = 3  # number of photos in burst
-DEFAULT_BURST_DELAY = 0.5  # seconds between burst photos
+DEFAULT_BURST_COUNT = 5  # number of photos in burst
+DEFAULT_BURST_DELAY = 0.3  # seconds between burst photos
 DEFAULT_SAMPLING_RATE = 0.1  # seconds between PIR sensor checks
 
 # Global camera variable
