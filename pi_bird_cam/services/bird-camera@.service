@@ -23,6 +23,8 @@ RestartSec=30
 StandardOutput=journal
 StandardError=journal
 # Ensure proper directory access
+ReadOnlyDirectories=/
+ReadWriteDirectories=/home/%i
 ReadWriteDirectories=/home/%i/backyard_bird_cam
 ReadWriteDirectories=/home/%i/backyard_bird_cam/images
 # More permissive security context
@@ -36,10 +38,13 @@ AmbientCapabilities=
 DynamicUser=no
 SupplementaryGroups=gpio video
 # Add explicit directory permissions
-ReadOnlyDirectories=/
-ReadWriteDirectories=/home/%i
-ReadWriteDirectories=/home/%i/backyard_bird_cam
-ReadWriteDirectories=/home/%i/backyard_bird_cam/images
+InaccessibleDirectories=/home
+InaccessibleDirectories=/home/*
+InaccessibleDirectories=/home/%i/*
+InaccessibleDirectories=/home/%i/backyard_bird_cam/*
+InaccessibleDirectories=/home/%i/backyard_bird_cam/images/*
+InaccessibleDirectories=/home/%i/backyard_bird_cam/scripts/*
+InaccessibleDirectories=/home/%i/backyard_bird_cam/logs/*
 
 [Install]
 WantedBy=multi-user.target 
