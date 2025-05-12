@@ -21,12 +21,19 @@ Environment=DEBUG=1
 NoNewPrivileges=no
 ProtectHome=no
 ProtectSystem=no
+PrivateTmp=no
 ReadOnlyDirectories=/
+ReadWriteDirectories=/home/%i
 ReadWriteDirectories=/home/%i/backyard_bird_cam
 ReadWriteDirectories=/home/%i/backyard_bird_cam/images
 
 # Hardware access
 SupplementaryGroups=gpio video
+
+# Additional security settings
+CapabilityBoundingSet=
+AmbientCapabilities=
+DynamicUser=no
 
 [Install]
 WantedBy=multi-user.target 

@@ -35,8 +35,13 @@ fi
 echo "Checking directory structure..."
 echo "Setting up permissions..."
 
+# Set parent directory permissions
+chmod 755 "$ACTUAL_HOME"
+chown $ACTUAL_USER:$ACTUAL_USER "$ACTUAL_HOME"
+
 # Set directory permissions
 chmod 777 "$ACTUAL_HOME/backyard_bird_cam"
+chown $ACTUAL_USER:$ACTUAL_USER "$ACTUAL_HOME/backyard_bird_cam"
 
 # Set ownership of files (excluding .env and virtual environments)
 find "$ACTUAL_HOME/backyard_bird_cam" -type f -not -path "*/\.*" -not -path "*/\.venv/*" -not -path "*/venv/*" -exec chown $ACTUAL_USER:$ACTUAL_USER {} \;
