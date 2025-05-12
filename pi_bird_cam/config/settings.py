@@ -14,7 +14,8 @@ class Settings:
         },
         "camera": {
             "resolution": [1920, 1080],
-            "rotation": 0
+            "rotation": 0,
+            "focus_distance_inches": 13.5  # Focus distance in inches (8 inches to infinity)
         },
         "storage": {
             "base_dir": "photos",

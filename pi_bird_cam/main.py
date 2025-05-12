@@ -91,7 +91,8 @@ def main():
             # Initialize camera
             camera = CameraHandler(
                 resolution=tuple(settings.get("camera", "resolution")),
-                rotation=settings.get("camera", "rotation")
+                rotation=settings.get("camera", "rotation"),
+                focus_distance_inches=settings.get("camera", "focus_distance_inches")
             )
             
             # Initialize storage

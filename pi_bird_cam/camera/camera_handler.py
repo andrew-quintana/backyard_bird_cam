@@ -8,6 +8,7 @@ try:
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
+    from picamera2.controls import controls
 except ImportError:
     # For development on non-Raspberry Pi systems
     import sys
@@ -89,18 +90,44 @@ except ImportError:
 class CameraHandler:
     """Class to handle camera operations."""
 
-    def __init__(self, resolution=(1920, 1080), rotation=0):
+    # IMX219 camera focus range in inches
+    MIN_FOCUS_DISTANCE = 8  # 20cm
+    MAX_FOCUS_DISTANCE = float('inf')  # infinity
+
+    def __init__(self, resolution=(1920, 1080), rotation=0, focus_distance_inches=24):
         """Initialize the camera with specified resolution.
         
         Args:
             resolution (tuple): Camera resolution as (width, height)
             rotation (int): Camera rotation in degrees (0, 90, 180, or 270)
+            focus_distance_inches (float): Focus distance in inches (8 inches to infinity)
         """
         self.resolution = resolution
         self.rotation = rotation
+        self.focus_distance_inches = focus_distance_inches
         self.camera = None
         self.logger = logging.getLogger(__name__)
         self.setup()
+        
+    def _convert_inches_to_lens_position(self, inches):
+        """Convert distance in inches to camera lens position (0.0 to 1.0).
+        
+        Args:
+            inches (float): Distance in inches
+            
+        Returns:
+            float: Lens position value between 0.0 and 1.0
+        """
+        if inches <= self.MIN_FOCUS_DISTANCE:
+            return 0.0
+        elif inches == float('inf'):
+            return 1.0
+        else:
+            # Convert using inverse relationship (closer = lower value)
+            # Using a simple logarithmic scale for better distribution
+            import math
+            normalized = (math.log(inches) - math.log(self.MIN_FOCUS_DISTANCE)) / 10.0
+            return min(max(normalized, 0.0), 1.0)
         
     def setup(self):
         """Setup the camera."""
@@ -117,6 +144,20 @@ class CameraHandler:
         
         # Start the camera
         self.camera.start()
+        
+        # Convert inches to lens position
+        lens_position = self._convert_inches_to_lens_position(self.focus_distance_inches)
+        
+        # Set manual focus mode and focus distance
+        self.camera.set_controls({
+            "AfMode": controls.AfModeEnum.Manual,
+            "LensPosition": lens_position,
+            "AwbMode": controls.AwbModeEnum.Auto,
+            "AeEnable": True
+        })
+        
+        self.logger.info(f"Camera configured with focus distance of {self.focus_distance_inches} inches "
+                        f"(lens position: {lens_position:.2f})")
         
         # Allow time for camera to warm up
         time.sleep(0.5)
