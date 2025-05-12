@@ -23,9 +23,14 @@ echo "Setting up permissions..."
 # First set directory permissions
 chmod 755 "$CURRENT_HOME/backyard_bird_cam"
 
-# Then set ownership of all files except .env
+# Then set ownership of all files except .env and virtual environment
 echo "Setting ownership of files..."
-find "$CURRENT_HOME/backyard_bird_cam" -not -name ".env" -exec chown $CURRENT_USER:$CURRENT_USER {} \;
+find "$CURRENT_HOME/backyard_bird_cam" \
+    -not -path "*/\.*" \
+    -not -path "*/\.venv/*" \
+    -not -path "*/venv/*" \
+    -not -name ".env" \
+    -exec chown $CURRENT_USER:$CURRENT_USER {} \;
 
 # Set permissions for .env if it exists
 if [ -f "$CURRENT_HOME/backyard_bird_cam/.env" ]; then
@@ -41,6 +46,9 @@ if [ ! -f "$SCRIPT_PATH" ]; then
     exit 1
 fi
 echo "Found script at: $SCRIPT_PATH"
+
+# Ensure script is executable
+chmod +x "$SCRIPT_PATH"
 
 # Remove any custom pigpiod service to use system default
 if [ -f /etc/systemd/system/pigpiod.service ]; then
