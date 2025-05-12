@@ -65,8 +65,13 @@ systemctl disable bird-camera@$ACTUAL_USER 2>/dev/null || true
 systemctl stop pigpiod 2>/dev/null || true
 systemctl disable pigpiod 2>/dev/null || true
 
-# Copy service file
-cp "$ACTUAL_HOME/backyard_bird_cam/services/bird-camera@.service" /etc/systemd/system/
+# Copy service file (using correct path)
+SERVICE_FILE="$ACTUAL_HOME/backyard_bird_cam/pi_bird_cam/services/bird-camera@.service"
+if [ ! -f "$SERVICE_FILE" ]; then
+    echo "Error: Service file not found at $SERVICE_FILE"
+    exit 1
+fi
+cp "$SERVICE_FILE" /etc/systemd/system/
 
 # Reload systemd
 echo "Reloading systemd..."
