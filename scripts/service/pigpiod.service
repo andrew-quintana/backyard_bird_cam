@@ -1,22 +1,13 @@
 [Unit]
 Description=PIGPIO Daemon Service
-After=network.target
-Before=backyard_bird_cam@%i.service
+After=multi-user.target
 
 [Service]
-Type=simple
-User=%i
-Group=gpio
-ExecStartPre=/bin/sleep 2
-ExecStart=/usr/bin/pigpiod -v
-ExecStartPost=/bin/sleep 2
-ExecStartPost=/usr/bin/pgrep pigpiod
-ExecStartPost=/bin/sleep 1
-ExecStartPost=/usr/bin/python3 -c "import pigpio; pi = pigpio.pi(); pi.stop()"
+Type=forking
+ExecStart=/usr/bin/pigpiod
+ExecStop=/bin/systemctl kill pigpiod
 Restart=always
 RestartSec=10
-StandardOutput=append:/var/log/pigpiod.log
-StandardError=append:/var/log/pigpiod.error.log
 
 [Install]
 WantedBy=multi-user.target 
