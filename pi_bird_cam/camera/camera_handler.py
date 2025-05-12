@@ -153,7 +153,7 @@ class CameraHandler:
             "AfMode": controls.AfModeEnum.Manual,
             "LensPosition": lens_position,
             "AwbMode": controls.AwbModeEnum.Auto,
-            "AeEnable": True
+            "AeMode": controls.AeModeEnum.Auto
         }
         
         self.logger.info(f"Setting camera controls: {controls_dict}")
