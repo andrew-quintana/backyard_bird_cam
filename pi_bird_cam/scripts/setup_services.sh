@@ -102,7 +102,7 @@ if [ -f "$ACTUAL_HOME/backyard_bird_cam/.env" ]; then
 fi
 
 # Verify script exists
-SCRIPT_PATH="$ACTUAL_HOME/backyard_bird_cam/scripts/simple_pir_trigger.py"
+SCRIPT_PATH="$ACTUAL_HOME/backyard_bird_cam/pi_bird_cam/scripts/simple_pir_trigger.py"
 if [ -f "$SCRIPT_PATH" ]; then
     echo "Found script at: $SCRIPT_PATH"
     chmod +x "$SCRIPT_PATH"
