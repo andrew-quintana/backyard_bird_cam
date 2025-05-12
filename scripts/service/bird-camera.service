@@ -1,0 +1,17 @@
+[Unit]
+Description=Bird Camera Trigger Service
+After=pigpiod.service
+Requires=pigpiod.service
+
+[Service]
+Type=simple
+User=aq_home
+WorkingDirectory=/home/aq_home/backyard_bird_cam
+ExecStart=/usr/bin/python3 /home/aq_home/backyard_bird_cam/scripts/simple_pir_trigger.py
+Restart=always
+RestartSec=30
+StandardOutput=append:/var/log/bird-camera.log
+StandardError=append:/var/log/bird-camera.error.log
+
+[Install]
+WantedBy=multi-user.target 
