@@ -5,15 +5,26 @@ set -e
 
 echo "Setting up bird camera services..."
 
-# Get the current user
+# Get the current user and home directory
 CURRENT_USER=$(whoami)
-echo "Setting up services for user: $CURRENT_USER"
+CURRENT_HOME=$(eval echo ~$CURRENT_USER)
+echo "Current user: $CURRENT_USER"
+echo "Home directory: $CURRENT_HOME"
 
-# Ensure the backyard_bird_cam directory exists in the user's home
-if [ ! -d "$HOME/backyard_bird_cam" ]; then
-    echo "Creating backyard_bird_cam directory in $HOME..."
-    mkdir -p "$HOME/backyard_bird_cam"
+# Verify directory structure
+echo "Checking directory structure..."
+if [ ! -d "$CURRENT_HOME/backyard_bird_cam" ]; then
+    echo "Creating backyard_bird_cam directory in $CURRENT_HOME..."
+    mkdir -p "$CURRENT_HOME/backyard_bird_cam"
 fi
+
+# Verify script exists
+SCRIPT_PATH="$CURRENT_HOME/backyard_bird_cam/scripts/simple_pir_trigger.py"
+if [ ! -f "$SCRIPT_PATH" ]; then
+    echo "Error: Script not found at $SCRIPT_PATH"
+    exit 1
+fi
+echo "Found script at: $SCRIPT_PATH"
 
 # Remove any custom pigpiod service to use system default
 if [ -f /etc/systemd/system/pigpiod.service ]; then
@@ -38,8 +49,14 @@ sudo systemctl daemon-reload
 echo "Enabling and starting services..."
 sudo systemctl enable pigpiod
 sudo systemctl start pigpiod
-sudo systemctl enable bird-camera
-sudo systemctl start bird-camera
+sudo systemctl enable bird-camera@$CURRENT_USER
+sudo systemctl start bird-camera@$CURRENT_USER
 
 echo "Services setup complete!"
-echo "You can check status with: sudo systemctl status pigpiod bird-camera" 
+echo "Checking service status..."
+sudo systemctl status pigpiod bird-camera@$CURRENT_USER
+
+echo "You can check logs with:"
+echo "  sudo journalctl -u bird-camera@$CURRENT_USER -f"
+echo "  tail -f /var/log/bird-camera.log"
+echo "  tail -f /var/log/bird-camera.error.log" 
