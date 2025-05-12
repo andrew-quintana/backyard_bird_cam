@@ -1,5 +1,60 @@
 #!/bin/bash
 
+# Function to safely stop a service
+stop_service() {
+    local service=$1
+    echo "Stopping $service..."
+    
+    # Try normal stop first
+    systemctl stop $service 2>/dev/null
+    
+    # Check if service is still running
+    if systemctl is-active --quiet $service; then
+        echo "Service $service is still running, attempting force stop..."
+        
+        # Get the PID of the service
+        local pid=$(systemctl show -p MainPID $service | cut -d= -f2)
+        
+        if [ "$pid" != "0" ]; then
+            echo "Force stopping process $pid..."
+            kill -9 $pid 2>/dev/null
+        fi
+        
+        # Wait for service to stop
+        local timeout=10
+        while systemctl is-active --quiet $service && [ $timeout -gt 0 ]; do
+            sleep 1
+            timeout=$((timeout-1))
+        done
+        
+        if [ $timeout -eq 0 ]; then
+            echo "Warning: Could not stop $service completely"
+        fi
+    fi
+}
+
+# Function to safely start a service
+start_service() {
+    local service=$1
+    echo "Starting $service..."
+    
+    systemctl start $service
+    
+    # Wait for service to start
+    local timeout=10
+    while ! systemctl is-active --quiet $service && [ $timeout -gt 0 ]; do
+        sleep 1
+        timeout=$((timeout-1))
+    done
+    
+    if [ $timeout -eq 0 ]; then
+        echo "Error: Failed to start $service"
+        return 1
+    fi
+    
+    return 0
+}
+
 echo "Setting up bird camera services..."
 
 # Get the actual user who ran sudo
@@ -58,12 +113,13 @@ fi
 
 # Install service
 echo "Installing bird-camera service..."
-systemctl stop bird-camera@$ACTUAL_USER 2>/dev/null || true
-systemctl disable bird-camera@$ACTUAL_USER 2>/dev/null || true
 
-# Remove any custom pigpiod service
-systemctl stop pigpiod 2>/dev/null || true
-systemctl disable pigpiod 2>/dev/null || true
+# Stop and disable existing services
+stop_service "bird-camera@$ACTUAL_USER"
+systemctl disable "bird-camera@$ACTUAL_USER" 2>/dev/null || true
+
+stop_service "pigpiod"
+systemctl disable "pigpiod" 2>/dev/null || true
 
 # Copy service file (using correct path)
 SERVICE_FILE="$ACTUAL_HOME/backyard_bird_cam/pi_bird_cam/services/bird-camera@.service"
@@ -80,16 +136,23 @@ systemctl daemon-reload
 # Enable and start services
 echo "Enabling and starting services..."
 systemctl enable pigpiod
-systemctl start pigpiod
-systemctl enable bird-camera@$ACTUAL_USER
-systemctl start bird-camera@$ACTUAL_USER
+if ! start_service "pigpiod"; then
+    echo "Error: Failed to start pigpiod service"
+    exit 1
+fi
+
+systemctl enable "bird-camera@$ACTUAL_USER"
+if ! start_service "bird-camera@$ACTUAL_USER"; then
+    echo "Error: Failed to start bird-camera service"
+    exit 1
+fi
 
 echo "Services setup complete!"
 
 # Check service status
 echo "Checking service status..."
 systemctl status pigpiod
-systemctl status bird-camera@$ACTUAL_USER
+systemctl status "bird-camera@$ACTUAL_USER"
 
 echo -e "\nTo monitor the camera service in real-time, use:"
 echo "   sudo journalctl -u bird-camera@$ACTUAL_USER -f"
