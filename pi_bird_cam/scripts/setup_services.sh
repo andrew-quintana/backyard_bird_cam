@@ -34,7 +34,7 @@ fi
 
 # Copy bird-camera service
 echo "Installing bird-camera service..."
-sudo cp "$(dirname "$0")/../services/bird-camera.service" /etc/systemd/system/
+sudo cp "$(dirname "$0")/../services/bird-camera@.service" /etc/systemd/system/
 
 # Create log files with proper permissions
 echo "Setting up log files..."
