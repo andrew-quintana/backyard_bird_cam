@@ -33,14 +33,20 @@ def main():
     logger = logging.getLogger(__name__)
 
     try:
+        # Get the correct config file path
+        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
+        
         # Update settings
-        settings = Settings()
+        settings = Settings(config_file=config_path)
         settings.set("camera", "focus_distance_inches", args.distance)
         logger.info(f"Focus distance updated to {args.distance} inches")
         
         # Print current settings
         current = settings.get("camera", "focus_distance_inches")
         logger.info(f"Current focus distance: {current} inches")
+        
+        # Print the config file location
+        logger.info(f"Config file location: {config_path}")
         
     except Exception as e:
         logger.error(f"Error updating focus distance: {e}")
