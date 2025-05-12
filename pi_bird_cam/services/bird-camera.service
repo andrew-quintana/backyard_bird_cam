@@ -5,9 +5,9 @@ Requires=pigpiod.service
 
 [Service]
 Type=simple
-User=%u
-WorkingDirectory=%h/backyard_bird_cam
-ExecStart=/usr/bin/python3 %h/backyard_bird_cam/scripts/simple_pir_trigger.py
+User=fizz
+WorkingDirectory=/home/fizz/backyard_bird_cam
+ExecStart=/usr/bin/python3 /home/fizz/backyard_bird_cam/scripts/simple_pir_trigger.py
 Restart=always
 RestartSec=30
 StandardOutput=append:/var/log/bird-camera.log
