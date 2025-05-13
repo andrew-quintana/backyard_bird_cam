@@ -91,7 +91,7 @@ def initialize_camera():
         camera = CameraHandler(
             resolution=(4056, 3040),
             rotation=0,
-            focus_distance_inches=24  # Default focus distance
+            focus_distance_inches=13.5  # Default focus distance
         )
         camera.setup()
         logging.info("Camera initialized and active")
