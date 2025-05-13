@@ -190,9 +190,9 @@ class CameraHandler:
                 "FrameDurationLimits": (100, 1000000000),
                 "AfMode": 0,  # Manual focus mode (0 = manual)
                 "LensPosition": lens_position,
-                "AwbMode": 1,  # Auto white balance (1 = auto)
-                "AeMeteringMode": 1,  # Centre-weighted metering (1 = centre)
-                "AeExposureMode": 1,  # Normal exposure mode (1 = normal)
+                "AwbMode": 0,  # Auto white balance (0 = auto)
+                "AeMeteringMode": 0,  # Centre-weighted metering (0 = centre)
+                "AeExposureMode": 0,  # Normal exposure mode (0 = normal)
                 "AeEnable": True,  # Enable auto exposure
                 "ExposureTime": 3000,  # Initial exposure time in microseconds
                 "AnalogueGain": 1.0,  # Initial analogue gain
