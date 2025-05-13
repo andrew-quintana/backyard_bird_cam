@@ -141,24 +141,21 @@ class CameraHandler:
         self.setup()
         
     def _convert_inches_to_lens_position(self, inches):
-        """Convert distance in inches to camera lens position (0.0 to 1.0).
-        
+        """Convert distance in inches to camera lens position (0 to 15).
         Args:
             inches (float): Distance in inches
-            
         Returns:
-            float: Lens position value between 0.0 and 1.0
+            float: Lens position value between 0 (infinity) and 15 (closest)
         """
         if inches <= self.MIN_FOCUS_DISTANCE:
-            return 0.0
+            return 15.0
         elif inches == float('inf'):
-            return 1.0
+            return 0.0
         else:
-            # Convert using inverse relationship (closer = lower value)
-            # Using a simple logarithmic scale for better distribution
             import math
             normalized = (math.log(inches) - math.log(self.MIN_FOCUS_DISTANCE)) / 10.0
-            return min(max(normalized, 0.0), 1.0)
+            normalized = min(max(normalized, 0.0), 1.0)
+            return 15.0 * (1.0 - normalized)
         
     def setup(self):
         """Setup the camera."""
@@ -187,9 +184,8 @@ class CameraHandler:
             main={"size": self.resolution},
             controls={
                 # Only set what you want to override; omit the rest for defaults
-                "AfMode": 2,        # Continuous autofocus
-                "AfMetering": 0,    # Center metering (if supported)
-                #"LensPosition": lens_position,  # Only if you want manual focus
+                "AfMode": 0,  # Manual focus, if you want to control focus
+                "LensPosition": lens_position,  # Only if you want manual focus
                 "AeEnable": True,  # Auto exposure (optional, usually default)
                 "ExposureTime": 3000,  # Initial exposure time in microseconds
             }
