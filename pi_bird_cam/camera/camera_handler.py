@@ -184,6 +184,8 @@ class CameraHandler:
         config = self.camera.create_still_configuration(
             main={"size": self.resolution},
             controls={
+                "NoiseReductionMode": 2,  # HighQuality mode as integer
+                "FrameDurationLimits": (100, 1000000000),
                 "AfMode": "manual",  # Manual focus mode
                 "LensPosition": lens_position,
                 "AwbMode": "auto",  # Auto white balance
