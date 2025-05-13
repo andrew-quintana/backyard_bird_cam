@@ -4,6 +4,10 @@ import time
 import logging
 from datetime import datetime
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 try:
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
@@ -158,8 +162,20 @@ class CameraHandler:
             "FrameDurationLimits": (33333, 33333)  # 30fps frame rate
         }
         
+        self.logger.debug("Available camera controls before setting:")
+        for control in self.camera.camera_controls:
+            self.logger.debug(f"  {control}: {self.camera.camera_controls[control]}")
+            
         self.logger.info(f"Setting camera controls: {controls_dict}")
         self.camera.set_controls(controls_dict)
+        
+        self.logger.debug("Available camera controls after setting:")
+        for control in self.camera.camera_controls:
+            self.logger.debug(f"  {control}: {self.camera.camera_controls[control]}")
+            
+        self.logger.debug("Current camera configuration:")
+        self.logger.debug(f"  Streams: {self.camera.camera_configuration()}")
+        self.logger.debug(f"  Properties: {self.camera.camera_properties}")
         
         # Allow time for auto exposure to settle
         time.sleep(0.5)
