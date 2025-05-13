@@ -185,8 +185,8 @@ class CameraHandler:
                 # Only set what you want to override; omit the rest for defaults
                 "AfMode": 0,  # Manual focus, if you want to control focus
                 "LensPosition": 2,  # Only if you want manual focus
-                "AeEnable": True,  # Auto exposure (optional, usually default)
-                "ExposureTime": 3000,  # Initial exposure time in microseconds
+                "AeEnable": False,  # Auto exposure (optional, usually default)
+                "ExposureTime": 5000,  # Initial exposure time in microseconds
             }
         )
         
