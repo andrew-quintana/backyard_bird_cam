@@ -187,8 +187,9 @@ class CameraHandler:
             main={"size": self.resolution},
             controls={
                 # Only set what you want to override; omit the rest for defaults
-                "AfMode": 0,  # Manual focus, if you want to control focus
-                "LensPosition": lens_position,  # Only if you want manual focus
+                "AfMode": 2,        # Continuous autofocus
+                "AfMetering": 0,    # Center metering (if supported)
+                #"LensPosition": lens_position,  # Only if you want manual focus
                 "AeEnable": True,  # Auto exposure (optional, usually default)
                 "ExposureTime": 3000,  # Initial exposure time in microseconds
             }
