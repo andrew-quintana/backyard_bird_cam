@@ -147,15 +147,14 @@ class CameraHandler:
         Returns:
             float: Lens position value between 0 (infinity) and 15 (closest)
         """
-        if inches <= self.MIN_FOCUS_DISTANCE:
-            return 15.0
-        elif inches == float('inf'):
-            return 0.0
-        else:
-            import math
-            normalized = (math.log(inches) - math.log(self.MIN_FOCUS_DISTANCE)) / 10.0
-            normalized = min(max(normalized, 0.0), 1.0)
-            return 15.0 * (1.0 - normalized)
+        MIN = self.MIN_FOCUS_DISTANCE
+        MAX = 100.0  # or whatever is appropriate for your use case
+
+        # Clamp inches to [MIN, MAX]
+        inches = max(min(inches, MAX), MIN)
+        normalized = (inches - MIN) / (MAX - MIN)
+        lens_position = 15.0 * (1.0 - normalized)
+        return lens_position
         
     def setup(self):
         """Setup the camera."""
