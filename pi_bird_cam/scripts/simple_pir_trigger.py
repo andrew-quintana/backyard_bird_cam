@@ -20,8 +20,7 @@ import signal
 import sys
 import logging
 import logging.handlers
-from picamera2 import Picamera2
-from libcamera import controls
+from pi_bird_cam.camera.camera_handler import CameraHandler
 import RPi.GPIO as GPIO
 
 # Configure logging
@@ -83,25 +82,12 @@ def initialize_camera():
     """Initialize the camera and keep it active"""
     global camera
     try:
-        camera = Picamera2()
-        # Configure for high resolution still capture
-        still_config = camera.create_still_configuration(
-            main={"size": (4056, 3040)},
-            lores={"size": (640, 480)},
-            display="lores"
+        camera = CameraHandler(
+            resolution=(4056, 3040),
+            rotation=0,
+            focus_distance_inches=24  # Default focus distance
         )
-        camera.configure(still_config)
-        
-        # Start the camera and keep it active
-        camera.start(show_preview=False)
-        
-        # Apply initial settings
-        camera.set_controls({
-            "AfMode": controls.AfModeEnum.Continuous,
-            "AwbMode": controls.AwbModeEnum.Auto,
-            "AeEnable": True
-        })
-        
+        camera.setup_camera()
         logging.info("Camera initialized and active")
         return True
     except Exception as e:
@@ -124,7 +110,7 @@ def capture_photo(output_dir, filename):
                 return False
         
         # Capture photo
-        camera.capture_file(output_path)
+        camera.take_photo(output_path)
         logging.info(f"Photo captured: {output_path}")
         return True
     except Exception as e:
@@ -132,7 +118,7 @@ def capture_photo(output_dir, filename):
         # Try to recover by reinitializing the camera
         try:
             if camera:
-                camera.close()
+                camera.cleanup()
             camera = None
             initialize_camera()
         except:
@@ -165,7 +151,7 @@ def cleanup():
     global camera
     try:
         if camera:
-            camera.close()
+            camera.cleanup()
             camera = None
         GPIO.cleanup()
     except:
