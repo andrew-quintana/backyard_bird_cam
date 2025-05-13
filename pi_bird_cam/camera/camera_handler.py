@@ -160,6 +160,7 @@ class CameraHandler:
                 "AeMode": controls.AeModeEnum.Auto,
                 "AeMeteringMode": controls.AeMeteringModeEnum.Matrix,
                 "AeExposureMode": controls.AeExposureModeEnum.Normal,
+                "AeEnable": True,
                 "FrameDurationLimits": (33333, 33333)  # 30fps frame rate
             }
         )
