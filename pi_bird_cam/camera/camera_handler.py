@@ -187,7 +187,6 @@ class CameraHandler:
                 "AfMode": "manual",  # Manual focus mode
                 "LensPosition": lens_position,
                 "AwbMode": "auto",  # Auto white balance
-                "AeMode": "auto",  # Auto exposure
                 "AeMeteringMode": "centre",  # Centre-weighted metering
                 "AeExposureMode": "normal",  # Normal exposure mode
                 "AeEnable": True,  # Enable auto exposure
