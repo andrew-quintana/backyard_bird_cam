@@ -87,7 +87,7 @@ def initialize_camera():
             rotation=0,
             focus_distance_inches=24  # Default focus distance
         )
-        camera.setup_camera()
+        camera.setup()
         logging.info("Camera initialized and active")
         return True
     except Exception as e:
