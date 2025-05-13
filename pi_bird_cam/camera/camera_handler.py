@@ -12,11 +12,90 @@ logger = logging.getLogger(__name__)
 # Check if we're running on a Raspberry Pi
 IS_RASPBERRY_PI = platform.system() == 'Linux' and os.path.exists('/proc/device-tree/model') and 'Raspberry Pi' in open('/proc/device-tree/model').read()
 
+class MockPicamera2:
+    """Mock Picamera2 class for development on non-Raspberry Pi systems."""
+    
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Using MockPicamera2 (not running on a Raspberry Pi)")
+        self.config = None
+        self.camera_config = {"size": (1920, 1080)}
+        self._is_configured = False
+        self._is_started = False
+        # Initialize all required attributes
+        self.camera_properties = {
+            "PixelArraySize": (4056, 3040),
+            "PixelFormat": "RGB888",
+            "FrameDurationLimits": (33333, 33333),
+            "ExposureTime": 3000,
+            "AnalogueGain": 1.0,
+            "ColourGains": (1.0, 1.0),
+            "AeEnable": True,
+            "AeMeteringMode": "centre",
+            "AeExposureMode": "normal",
+            "AwbMode": "auto",
+            "AfMode": "manual",
+            "LensPosition": 0.0
+        }
+        self.camera_controls = {
+            "AfMode": {"Manual": "manual", "Auto": "auto", "Continuous": "continuous"},
+            "AwbMode": {"Auto": "auto", "Tungsten": "tungsten", "Fluorescent": "fluorescent", "Indoor": "indoor", "Daylight": "daylight", "Cloudy": "cloudy"},
+            "AeMode": {"Auto": "auto", "Manual": "manual"},
+            "AeMeteringMode": {"Centre": "centre", "Matrix": "matrix", "Spot": "spot"},
+            "AeExposureMode": {"Normal": "normal", "Short": "short", "Long": "long", "Custom": "custom"}
+        }
+        
+    def create_still_configuration(self, main=None, **kwargs):
+        """Create a still configuration."""
+        return {"size": main if main else (1920, 1080)}
+        
+    def configure(self, config):
+        """Configure the camera."""
+        self.config = config
+        self._is_configured = True
+        
+    def start(self):
+        """Start the camera."""
+        if not self._is_configured:
+            self.configure(self.create_still_configuration())
+        self._is_started = True
+        
+    def stop(self):
+        """Stop the camera."""
+        self._is_started = False
+        
+    def close(self):
+        """Close the camera."""
+        self._is_started = False
+        
+    def capture_file(self, filename):
+        """Capture a photo to a file."""
+        if not self._is_started:
+            self.start()
+            
+        # Create a dummy image
+        img = Image.new('RGB', (1920, 1080), color=(73, 109, 137))
+        
+        # Add a timestamp
+        from PIL import ImageDraw, ImageFont
+        d = ImageDraw.Draw(img)
+        text = f"Mock Camera - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        d.text((10, 10), text, fill=(255, 255, 0))
+        
+        # Save the image
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        img.save(filename)
+        return filename
+        
+    def camera_configuration(self):
+        """Return camera configuration."""
+        return self.camera_config
+
+# Import picamera2 modules
 if IS_RASPBERRY_PI:
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
-    from picamera2.controls import NoiseReductionModeEnum
 else:
     # For development on non-Raspberry Pi systems
     import sys
@@ -24,111 +103,20 @@ else:
     from PIL import Image
     import numpy as np
     
-    class MockPicamera2:
-        """Mock Picamera2 class for development on non-Raspberry Pi systems."""
-        
-        def __init__(self):
-            self.logger = logging.getLogger(__name__)
-            self.logger.info("Using MockPicamera2 (not running on a Raspberry Pi)")
-            self.config = None
-            self.camera_config = {"size": (1920, 1080)}
-            self._is_configured = False
-            self._is_started = False
-            # Initialize all required attributes
-            self.camera_properties = {
-                "PixelArraySize": (4056, 3040),
-                "PixelFormat": "RGB888",
-                "FrameDurationLimits": (33333, 33333),
-                "ExposureTime": 3000,
-                "AnalogueGain": 1.0,
-                "ColourGains": (1.0, 1.0),
-                "AeEnable": True,
-                "AeMeteringMode": "centre",
-                "AeExposureMode": "normal",
-                "AwbMode": "auto",
-                "AfMode": "manual",
-                "LensPosition": 0.0
-            }
-            self.camera_controls = {
-                "AfMode": {"Manual": "manual", "Auto": "auto", "Continuous": "continuous"},
-                "AwbMode": {"Auto": "auto", "Tungsten": "tungsten", "Fluorescent": "fluorescent", "Indoor": "indoor", "Daylight": "daylight", "Cloudy": "cloudy"},
-                "AeMode": {"Auto": "auto", "Manual": "manual"},
-                "AeMeteringMode": {"Centre": "centre", "Matrix": "matrix", "Spot": "spot"},
-                "AeExposureMode": {"Normal": "normal", "Short": "short", "Long": "long", "Custom": "custom"}
-            }
-            
-        def create_still_configuration(self, main=None, **kwargs):
-            """Create a still configuration."""
-            return {"size": main if main else (1920, 1080)}
-            
-        def configure(self, config):
-            """Configure the camera."""
-            self.config = config
-            self._is_configured = True
-            
-        def start(self):
-            """Start the camera."""
-            if not self._is_configured:
-                self.configure(self.create_still_configuration())
-            self._is_started = True
-            
-        def stop(self):
-            """Stop the camera."""
-            self._is_started = False
-            
-        def close(self):
-            """Close the camera."""
-            self._is_started = False
-            
-        def capture_file(self, filename):
-            """Capture a photo to a file."""
-            if not self._is_started:
-                self.start()
-                
-            # Create a dummy image
-            img = Image.new('RGB', (1920, 1080), color=(73, 109, 137))
-            
-            # Add a timestamp
-            from PIL import ImageDraw, ImageFont
-            d = ImageDraw.Draw(img)
-            text = f"Mock Camera - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-            d.text((10, 10), text, fill=(255, 255, 0))
-            
-            # Save the image
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            img.save(filename)
-            return filename
-            
-        def camera_configuration(self):
-            """Return camera configuration."""
-            return self.camera_config
-    
-    # Create mock picamera2 module
+    # Create mock modules
     sys.modules['picamera2'] = types.ModuleType('picamera2')
     sys.modules['picamera2'].Picamera2 = MockPicamera2
     
-    # Create mock encoders module
     sys.modules['picamera2.encoders'] = types.ModuleType('picamera2.encoders')
     sys.modules['picamera2.encoders'].JpegEncoder = type('JpegEncoder', (), {})
     
-    # Create mock outputs module
     sys.modules['picamera2.outputs'] = types.ModuleType('picamera2.outputs')
     sys.modules['picamera2.outputs'].FileOutput = type('FileOutput', (), {'__init__': lambda self, filename: None})
-    
-    # Create mock controls module
-    sys.modules['picamera2.controls'] = types.ModuleType('picamera2.controls')
-    sys.modules['picamera2.controls'].NoiseReductionModeEnum = type('NoiseReductionModeEnum', (), {
-        'Off': 0,
-        'Fast': 1,
-        'HighQuality': 2
-    })
     
     # Import our mocks
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
-    from picamera2.controls import NoiseReductionModeEnum
-
 
 class CameraHandler:
     """Class to handle camera operations."""
@@ -198,7 +186,7 @@ class CameraHandler:
         config = self.camera.create_still_configuration(
             main={"size": self.resolution},
             controls={
-                "NoiseReductionMode": NoiseReductionModeEnum.HighQuality,  # Use enum value directly
+                "NoiseReductionMode": 2,  # HighQuality mode as integer
                 "FrameDurationLimits": (100, 1000000000),
                 "AfMode": "manual",  # Manual focus mode
                 "LensPosition": lens_position,
