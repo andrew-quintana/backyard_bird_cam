@@ -16,7 +16,8 @@ if IS_RASPBERRY_PI:
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
-    from picamera2.controls import controls
+    # Import individual control enums instead of the whole controls module
+    from picamera2.controls import AfModeEnum, AwbModeEnum, AeModeEnum, AeMeteringModeEnum, AeExposureModeEnum
 else:
     # For development on non-Raspberry Pi systems
     import sys
@@ -43,7 +44,7 @@ else:
                 "AnalogueGain": 1.0,
                 "ColourGains": (1.0, 1.0),
                 "AeEnable": True,
-                "AeMeteringMode": "matrix",
+                "AeMeteringMode": "centre",  # Changed to centre metering
                 "AeExposureMode": "normal",
                 "AwbMode": "auto",
                 "AfMode": "manual",
@@ -53,7 +54,7 @@ else:
                 "AfMode": {"Manual": "manual"},
                 "AwbMode": {"Auto": "auto"},
                 "AeMode": {"Auto": "auto"},
-                "AeMeteringMode": {"Matrix": "matrix"},
+                "AeMeteringMode": {"Centre": "centre", "Matrix": "matrix", "Spot": "spot"},
                 "AeExposureMode": {"Normal": "normal"}
             }
             
@@ -115,21 +116,23 @@ else:
     sys.modules['picamera2.outputs'] = types.ModuleType('picamera2.outputs')
     sys.modules['picamera2.outputs'].FileOutput = type('FileOutput', (), {'__init__': lambda self, filename: None})
     
-    # Create mock controls module
+    # Create mock controls module with individual enums
     sys.modules['picamera2.controls'] = types.ModuleType('picamera2.controls')
-    sys.modules['picamera2.controls'].controls = type('controls', (), {
-        'AfModeEnum': type('AfModeEnum', (), {'Manual': 'manual'}),
-        'AwbModeEnum': type('AwbModeEnum', (), {'Auto': 'auto'}),
-        'AeModeEnum': type('AeModeEnum', (), {'Auto': 'auto'}),
-        'AeMeteringModeEnum': type('AeMeteringModeEnum', (), {'Matrix': 'matrix'}),
-        'AeExposureModeEnum': type('AeExposureModeEnum', (), {'Normal': 'normal'})
+    sys.modules['picamera2.controls'].AfModeEnum = type('AfModeEnum', (), {'Manual': 'manual'})
+    sys.modules['picamera2.controls'].AwbModeEnum = type('AwbModeEnum', (), {'Auto': 'auto'})
+    sys.modules['picamera2.controls'].AeModeEnum = type('AeModeEnum', (), {'Auto': 'auto'})
+    sys.modules['picamera2.controls'].AeMeteringModeEnum = type('AeMeteringModeEnum', (), {
+        'Centre': 'centre',
+        'Matrix': 'matrix',
+        'Spot': 'spot'
     })
+    sys.modules['picamera2.controls'].AeExposureModeEnum = type('AeExposureModeEnum', (), {'Normal': 'normal'})
     
     # Import our mocks
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
-    from picamera2.controls import controls
+    from picamera2.controls import AfModeEnum, AwbModeEnum, AeModeEnum, AeMeteringModeEnum, AeExposureModeEnum
 
 
 class CameraHandler:
@@ -196,12 +199,12 @@ class CameraHandler:
         config = self.camera.create_still_configuration(
             main={"size": self.resolution},
             controls={
-                "AfMode": controls.AfModeEnum.Manual,
+                "AfMode": AfModeEnum.Manual,
                 "LensPosition": lens_position,
-                "AwbMode": controls.AwbModeEnum.Auto,
-                "AeMode": controls.AeModeEnum.Auto,
-                "AeMeteringMode": controls.AeMeteringModeEnum.Matrix,
-                "AeExposureMode": controls.AeExposureModeEnum.Normal,
+                "AwbMode": AwbModeEnum.Auto,
+                "AeMode": AeModeEnum.Auto,
+                "AeMeteringMode": AeMeteringModeEnum.Matrix,
+                "AeExposureMode": AeExposureModeEnum.Normal,
                 "AeEnable": True,
                 "ExposureTime": 3000,
                 "FrameDurationLimits": (33333, 33333)  # 30fps frame rate
