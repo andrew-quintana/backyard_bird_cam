@@ -26,7 +26,7 @@ import RPi.GPIO as GPIO
 
 # Configure logging
 def setup_logging():
-    log_level = os.getenv('LOG_LEVEL', 'INFO')
+    log_level = os.getenv('LOG_LEVEL', 'DEBUG')
     log_format = os.getenv('LOG_FORMAT', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     
     # Create logs directory if it doesn't exist
@@ -45,11 +45,13 @@ def setup_logging():
         backupCount=5
     )
     file_handler.setFormatter(logging.Formatter(log_format))
+    file_handler.setLevel(getattr(logging, log_level))
     root_logger.addHandler(file_handler)
     
     # Console handler for immediate output
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(logging.Formatter(log_format))
+    console_handler.setLevel(getattr(logging, log_level))
     root_logger.addHandler(console_handler)
     
     # Log system information
