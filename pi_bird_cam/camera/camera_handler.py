@@ -12,6 +12,33 @@ logger = logging.getLogger(__name__)
 # Check if we're running on a Raspberry Pi
 IS_RASPBERRY_PI = platform.system() == 'Linux' and os.path.exists('/proc/device-tree/model') and 'Raspberry Pi' in open('/proc/device-tree/model').read()
 
+# Import picamera2 modules
+if IS_RASPBERRY_PI:
+    from picamera2 import Picamera2
+    from picamera2.encoders import JpegEncoder
+    from picamera2.outputs import FileOutput
+else:
+    # For development on non-Raspberry Pi systems
+    import sys
+    import types
+    from PIL import Image
+    import numpy as np
+    
+    # Create mock modules
+    sys.modules['picamera2'] = types.ModuleType('picamera2')
+    sys.modules['picamera2'].Picamera2 = MockPicamera2
+    
+    sys.modules['picamera2.encoders'] = types.ModuleType('picamera2.encoders')
+    sys.modules['picamera2.encoders'].JpegEncoder = type('JpegEncoder', (), {})
+    
+    sys.modules['picamera2.outputs'] = types.ModuleType('picamera2.outputs')
+    sys.modules['picamera2.outputs'].FileOutput = type('FileOutput', (), {'__init__': lambda self, filename: None})
+    
+    # Import our mocks
+    from picamera2 import Picamera2
+    from picamera2.encoders import JpegEncoder
+    from picamera2.outputs import FileOutput
+
 class MockPicamera2:
     """Mock Picamera2 class for development on non-Raspberry Pi systems."""
     
@@ -90,33 +117,6 @@ class MockPicamera2:
     def camera_configuration(self):
         """Return camera configuration."""
         return self.camera_config
-
-# Import picamera2 modules
-if IS_RASPBERRY_PI:
-    from picamera2 import Picamera2
-    from picamera2.encoders import JpegEncoder
-    from picamera2.outputs import FileOutput
-else:
-    # For development on non-Raspberry Pi systems
-    import sys
-    import types
-    from PIL import Image
-    import numpy as np
-    
-    # Create mock modules
-    sys.modules['picamera2'] = types.ModuleType('picamera2')
-    sys.modules['picamera2'].Picamera2 = MockPicamera2
-    
-    sys.modules['picamera2.encoders'] = types.ModuleType('picamera2.encoders')
-    sys.modules['picamera2.encoders'].JpegEncoder = type('JpegEncoder', (), {})
-    
-    sys.modules['picamera2.outputs'] = types.ModuleType('picamera2.outputs')
-    sys.modules['picamera2.outputs'].FileOutput = type('FileOutput', (), {'__init__': lambda self, filename: None})
-    
-    # Import our mocks
-    from picamera2 import Picamera2
-    from picamera2.encoders import JpegEncoder
-    from picamera2.outputs import FileOutput
 
 class CameraHandler:
     """Class to handle camera operations."""
