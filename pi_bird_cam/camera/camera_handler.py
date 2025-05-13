@@ -140,6 +140,13 @@ class CameraHandler:
         # Initialize the camera
         self.camera = Picamera2()
         
+        # Log camera properties and controls before configuration
+        self.logger.debug("Camera properties before configuration:")
+        self.logger.debug(f"  Properties: {self.camera.camera_properties}")
+        self.logger.debug("Available camera controls before configuration:")
+        for control in self.camera.camera_controls:
+            self.logger.debug(f"  {control}: {self.camera.camera_controls[control]}")
+        
         # Convert inches to lens position
         lens_position = self._convert_inches_to_lens_position(self.focus_distance_inches)
         
@@ -157,10 +164,6 @@ class CameraHandler:
             }
         )
         
-        self.logger.debug("Available camera controls before configuration:")
-        for control in self.camera.camera_controls:
-            self.logger.debug(f"  {control}: {self.camera.camera_controls[control]}")
-            
         self.logger.info(f"Configuring camera with controls: {config['controls']}")
         self.camera.configure(config)
         
