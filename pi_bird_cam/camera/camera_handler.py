@@ -160,7 +160,6 @@ class CameraHandler:
                 "AeMode": controls.AeModeEnum.Auto,
                 "AeMeteringMode": controls.AeMeteringModeEnum.Matrix,
                 "AeExposureMode": controls.AeExposureModeEnum.Normal,
-                "AeEnable": True,
                 "FrameDurationLimits": (33333, 33333)  # 30fps frame rate
             }
         )
@@ -170,6 +169,7 @@ class CameraHandler:
         
         # Start the camera
         self.camera.start()
+        self.camera.set_controls({"AeEnable": True})
         
         # Allow time for auto exposure to settle
         time.sleep(0.5)
