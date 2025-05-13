@@ -16,8 +16,6 @@ if IS_RASPBERRY_PI:
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
-    # Import individual control enums instead of the whole controls module
-    from picamera2.controls import AfModeEnum, AwbModeEnum, AeModeEnum, AeMeteringModeEnum, AeExposureModeEnum
 else:
     # For development on non-Raspberry Pi systems
     import sys
@@ -44,18 +42,18 @@ else:
                 "AnalogueGain": 1.0,
                 "ColourGains": (1.0, 1.0),
                 "AeEnable": True,
-                "AeMeteringMode": "centre",  # Changed to centre metering
+                "AeMeteringMode": "centre",
                 "AeExposureMode": "normal",
                 "AwbMode": "auto",
                 "AfMode": "manual",
                 "LensPosition": 0.0
             }
             self.camera_controls = {
-                "AfMode": {"Manual": "manual"},
-                "AwbMode": {"Auto": "auto"},
-                "AeMode": {"Auto": "auto"},
+                "AfMode": {"Manual": "manual", "Auto": "auto", "Continuous": "continuous"},
+                "AwbMode": {"Auto": "auto", "Tungsten": "tungsten", "Fluorescent": "fluorescent", "Indoor": "indoor", "Daylight": "daylight", "Cloudy": "cloudy"},
+                "AeMode": {"Auto": "auto", "Manual": "manual"},
                 "AeMeteringMode": {"Centre": "centre", "Matrix": "matrix", "Spot": "spot"},
-                "AeExposureMode": {"Normal": "normal"}
+                "AeExposureMode": {"Normal": "normal", "Short": "short", "Long": "long", "Custom": "custom"}
             }
             
         def create_still_configuration(self, main=None, **kwargs):
@@ -116,23 +114,10 @@ else:
     sys.modules['picamera2.outputs'] = types.ModuleType('picamera2.outputs')
     sys.modules['picamera2.outputs'].FileOutput = type('FileOutput', (), {'__init__': lambda self, filename: None})
     
-    # Create mock controls module with individual enums
-    sys.modules['picamera2.controls'] = types.ModuleType('picamera2.controls')
-    sys.modules['picamera2.controls'].AfModeEnum = type('AfModeEnum', (), {'Manual': 'manual'})
-    sys.modules['picamera2.controls'].AwbModeEnum = type('AwbModeEnum', (), {'Auto': 'auto'})
-    sys.modules['picamera2.controls'].AeModeEnum = type('AeModeEnum', (), {'Auto': 'auto'})
-    sys.modules['picamera2.controls'].AeMeteringModeEnum = type('AeMeteringModeEnum', (), {
-        'Centre': 'centre',
-        'Matrix': 'matrix',
-        'Spot': 'spot'
-    })
-    sys.modules['picamera2.controls'].AeExposureModeEnum = type('AeExposureModeEnum', (), {'Normal': 'normal'})
-    
     # Import our mocks
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
-    from picamera2.controls import AfModeEnum, AwbModeEnum, AeModeEnum, AeMeteringModeEnum, AeExposureModeEnum
 
 
 class CameraHandler:
@@ -199,16 +184,16 @@ class CameraHandler:
         config = self.camera.create_still_configuration(
             main={"size": self.resolution},
             controls={
-                "AfMode": AfModeEnum.Manual,
+                "AfMode": "manual",  # Manual focus mode
                 "LensPosition": lens_position,
-                "AwbMode": AwbModeEnum.Auto,
-                "AeMode": AeModeEnum.Auto,
-                "AeMeteringMode": AeMeteringModeEnum.Centre,  # Changed to centre metering
-                "AeExposureMode": AeExposureModeEnum.Normal,
-                "AeEnable": True,
-                "ExposureTime": 3000,
-                "AnalogueGain": 1.0,
-                "ColourGains": (1.0, 1.0)
+                "AwbMode": "auto",  # Auto white balance
+                "AeMode": "auto",  # Auto exposure
+                "AeMeteringMode": "centre",  # Centre-weighted metering
+                "AeExposureMode": "normal",  # Normal exposure mode
+                "AeEnable": True,  # Enable auto exposure
+                "ExposureTime": 3000,  # Initial exposure time in microseconds
+                "AnalogueGain": 1.0,  # Initial analogue gain
+                "ColourGains": (1.0, 1.0)  # Initial color gains (R, B)
             }
         )
         
