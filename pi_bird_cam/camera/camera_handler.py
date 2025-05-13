@@ -184,7 +184,7 @@ class CameraHandler:
             controls={
                 # Only set what you want to override; omit the rest for defaults
                 "AfMode": 0,  # Manual focus, if you want to control focus
-                "LensPosition": lens_position,  # Only if you want manual focus
+                "LensPosition": 14,  # Only if you want manual focus
                 "AeEnable": True,  # Auto exposure (optional, usually default)
                 "ExposureTime": 3000,  # Initial exposure time in microseconds
             }
@@ -213,6 +213,10 @@ class CameraHandler:
         
         self.logger.info(f"Camera configured with focus distance of {self.focus_distance_inches} inches "
                         f"(lens position: {lens_position:.2f})")
+        
+        self.logger.info("All camera controls and their values:")
+        for control, value in self.camera.camera_controls.items():
+            self.logger.info(f"  {control}: {value}")
         
     def take_photo(self, output_path):
         """Take a photo and save it to the specified path.
