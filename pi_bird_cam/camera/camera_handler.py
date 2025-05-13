@@ -140,40 +140,37 @@ class CameraHandler:
         # Initialize the camera
         self.camera = Picamera2()
         
-        # Create and set configuration
+        # Convert inches to lens position
+        lens_position = self._convert_inches_to_lens_position(self.focus_distance_inches)
+        
+        # Create and set configuration with controls
         config = self.camera.create_still_configuration(
-            main={"size": self.resolution}
+            main={"size": self.resolution},
+            controls={
+                "AfMode": controls.AfModeEnum.Manual,
+                "LensPosition": lens_position,
+                "AwbMode": controls.AwbModeEnum.Auto,
+                "AeMode": controls.AeModeEnum.Auto,
+                "AeMeteringMode": controls.AeMeteringModeEnum.Matrix,
+                "AeExposureMode": controls.AeExposureModeEnum.Normal,
+                "FrameDurationLimits": (33333, 33333)  # 30fps frame rate
+            }
         )
+        
+        self.logger.debug("Available camera controls before configuration:")
+        for control in self.camera.camera_controls:
+            self.logger.debug(f"  {control}: {self.camera.camera_controls[control]}")
+            
+        self.logger.info(f"Configuring camera with controls: {config['controls']}")
         self.camera.configure(config)
         
         # Start the camera
         self.camera.start()
         
-        # Convert inches to lens position
-        lens_position = self._convert_inches_to_lens_position(self.focus_distance_inches)
-        
-        # Set manual focus mode and focus distance
-        controls_dict = {
-            "AfMode": controls.AfModeEnum.Manual,
-            "LensPosition": lens_position,
-            "AwbMode": controls.AwbModeEnum.Auto,
-            "AeMode": controls.AeModeEnum.Auto,
-            "AeMeteringMode": controls.AeMeteringModeEnum.Matrix,
-            "AeExposureMode": controls.AeExposureModeEnum.Normal,
-            "FrameDurationLimits": (33333, 33333)  # 30fps frame rate
-        }
-        
-        self.logger.debug("Available camera controls before setting:")
-        for control in self.camera.camera_controls:
-            self.logger.debug(f"  {control}: {self.camera.camera_controls[control]}")
-            
-        self.logger.info(f"Setting camera controls: {controls_dict}")
-        self.camera.set_controls(controls_dict)
-        
         # Allow time for auto exposure to settle
         time.sleep(0.5)
         
-        self.logger.debug("Available camera controls after setting:")
+        self.logger.debug("Available camera controls after configuration:")
         for control in self.camera.camera_controls:
             self.logger.debug(f"  {control}: {self.camera.camera_controls[control]}")
             
