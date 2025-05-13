@@ -149,6 +149,7 @@ class CameraHandler:
         
         # Convert inches to lens position
         lens_position = self._convert_inches_to_lens_position(self.focus_distance_inches)
+        self.logger.info(f"Converting focus distance {self.focus_distance_inches} inches to lens position: {lens_position:.4f}")
         
         # Create and set configuration with controls
         config = self.camera.create_still_configuration(
@@ -160,6 +161,8 @@ class CameraHandler:
                 "AeMode": controls.AeModeEnum.Auto,
                 "AeMeteringMode": controls.AeMeteringModeEnum.Matrix,
                 "AeExposureMode": controls.AeExposureModeEnum.Normal,
+                "AeEnable": True,
+                "ExposureTime": 3000,
                 "FrameDurationLimits": (33333, 33333)  # 30fps frame rate
             }
         )
@@ -169,8 +172,7 @@ class CameraHandler:
         
         # Start the camera
         self.camera.start()
-        self.camera.set_controls({"AeEnable": True})
-        
+
         # Allow time for auto exposure to settle
         time.sleep(0.5)
         
