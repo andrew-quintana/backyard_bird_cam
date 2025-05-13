@@ -157,6 +157,7 @@ class CameraHandler:
             "AfMode": controls.AfModeEnum.Manual,
             "LensPosition": lens_position,
             "AwbMode": controls.AwbModeEnum.Auto,
+            "AeMode": controls.AeModeEnum.Auto,
             "AeMeteringMode": controls.AeMeteringModeEnum.Matrix,
             "AeExposureMode": controls.AeExposureModeEnum.Normal,
             "FrameDurationLimits": (33333, 33333)  # 30fps frame rate
@@ -169,6 +170,9 @@ class CameraHandler:
         self.logger.info(f"Setting camera controls: {controls_dict}")
         self.camera.set_controls(controls_dict)
         
+        # Allow time for auto exposure to settle
+        time.sleep(0.5)
+        
         self.logger.debug("Available camera controls after setting:")
         for control in self.camera.camera_controls:
             self.logger.debug(f"  {control}: {self.camera.camera_controls[control]}")
@@ -176,9 +180,6 @@ class CameraHandler:
         self.logger.debug("Current camera configuration:")
         self.logger.debug(f"  Streams: {self.camera.camera_configuration()}")
         self.logger.debug(f"  Properties: {self.camera.camera_properties}")
-        
-        # Allow time for auto exposure to settle
-        time.sleep(0.5)
         
         # Verify the settings were applied
         current_controls = self.camera.camera_controls
