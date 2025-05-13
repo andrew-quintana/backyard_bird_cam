@@ -82,6 +82,12 @@ def initialize_camera():
     """Initialize the camera and keep it active"""
     global camera
     try:
+        # Clean up any existing camera instance
+        if camera:
+            camera.cleanup()
+            camera = None
+            time.sleep(0.5)  # Give time for resources to be fully released
+            
         camera = CameraHandler(
             resolution=(4056, 3040),
             rotation=0,
@@ -92,6 +98,12 @@ def initialize_camera():
         return True
     except Exception as e:
         logging.error(f"Failed to initialize camera: {e}")
+        if camera:
+            try:
+                camera.cleanup()
+            except:
+                pass
+            camera = None
         return False
 
 def capture_photo(output_dir, filename):
@@ -120,6 +132,7 @@ def capture_photo(output_dir, filename):
             if camera:
                 camera.cleanup()
             camera = None
+            time.sleep(0.5)  # Give time for resources to be fully released
             initialize_camera()
         except:
             pass
@@ -153,9 +166,10 @@ def cleanup():
         if camera:
             camera.cleanup()
             camera = None
+            time.sleep(0.5)  # Give time for resources to be fully released
         GPIO.cleanup()
-    except:
-        pass
+    except Exception as e:
+        logging.error(f"Error during cleanup: {e}")
     logging.info("Cleanup complete")
 
 def signal_handler(sig, frame):

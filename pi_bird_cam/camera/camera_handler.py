@@ -176,6 +176,10 @@ class CameraHandler:
         """Setup the camera."""
         self.logger.info(f"Setting up camera with resolution {self.resolution}")
         
+        # Clean up any existing camera instance
+        if self.camera:
+            self.cleanup()
+        
         # Initialize the camera
         self.camera = Picamera2()
         
@@ -291,6 +295,12 @@ class CameraHandler:
         """Release camera resources."""
         if self.camera:
             self.logger.info("Cleaning up camera resources")
-            self.camera.stop()
-            self.camera.close()
-            self.camera = None 
+            try:
+                self.camera.stop()
+                self.camera.close()
+            except Exception as e:
+                self.logger.error(f"Error during camera cleanup: {e}")
+            finally:
+                self.camera = None
+                # Add a small delay to ensure resources are fully released
+                time.sleep(0.1) 
