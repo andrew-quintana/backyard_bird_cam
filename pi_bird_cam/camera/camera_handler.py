@@ -186,17 +186,11 @@ class CameraHandler:
         config = self.camera.create_still_configuration(
             main={"size": self.resolution},
             controls={
-                "NoiseReductionMode": 2,  # HighQuality mode
-                "FrameDurationLimits": (100, 1000000000),
-                "AfMode": 0,  # Manual focus mode (0 = manual)
-                "LensPosition": lens_position,
-                "AwbMode": 0,  # Auto white balance (0 = auto)
-                "AeMeteringMode": 0,  # Centre-weighted metering (0 = centre)
-                "AeExposureMode": 0,  # Normal exposure mode (0 = normal)
-                "AeEnable": True,  # Enable auto exposure
+                # Only set what you want to override; omit the rest for defaults
+                "AfMode": 0,  # Manual focus, if you want to control focus
+                "LensPosition": lens_position,  # Only if you want manual focus
+                "AeEnable": True,  # Auto exposure (optional, usually default)
                 "ExposureTime": 3000,  # Initial exposure time in microseconds
-                "AnalogueGain": 1.0,  # Initial analogue gain
-                "ColourGains": (1.0, 1.0)  # Initial color gains (R, B)
             }
         )
         
