@@ -16,6 +16,7 @@ if IS_RASPBERRY_PI:
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
+    from picamera2.controls import NoiseReductionModeEnum
 else:
     # For development on non-Raspberry Pi systems
     import sys
@@ -114,10 +115,19 @@ else:
     sys.modules['picamera2.outputs'] = types.ModuleType('picamera2.outputs')
     sys.modules['picamera2.outputs'].FileOutput = type('FileOutput', (), {'__init__': lambda self, filename: None})
     
+    # Create mock controls module
+    sys.modules['picamera2.controls'] = types.ModuleType('picamera2.controls')
+    sys.modules['picamera2.controls'].NoiseReductionModeEnum = type('NoiseReductionModeEnum', (), {
+        'Off': 0,
+        'Fast': 1,
+        'HighQuality': 2
+    })
+    
     # Import our mocks
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
+    from picamera2.controls import NoiseReductionModeEnum
 
 
 class CameraHandler:
@@ -184,7 +194,7 @@ class CameraHandler:
         config = self.camera.create_still_configuration(
             main={"size": self.resolution},
             controls={
-                "NoiseReductionMode": 2,  # HighQuality mode as integer
+                "NoiseReductionMode": NoiseReductionModeEnum.HighQuality,  # Use enum value directly
                 "FrameDurationLimits": (100, 1000000000),
                 "AfMode": "manual",  # Manual focus mode
                 "LensPosition": lens_position,
