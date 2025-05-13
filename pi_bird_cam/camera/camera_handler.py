@@ -2,18 +2,22 @@
 import os
 import time
 import logging
+import platform
 from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-try:
+# Check if we're running on a Raspberry Pi
+IS_RASPBERRY_PI = platform.system() == 'Linux' and os.path.exists('/proc/device-tree/model') and 'Raspberry Pi' in open('/proc/device-tree/model').read()
+
+if IS_RASPBERRY_PI:
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
     from picamera2.controls import controls
-except ImportError:
+else:
     # For development on non-Raspberry Pi systems
     import sys
     import types
@@ -30,6 +34,8 @@ except ImportError:
             self.camera_config = {"size": (1920, 1080)}
             self._is_configured = False
             self._is_started = False
+            self.camera_properties = {}  # Add empty camera_properties
+            self.camera_controls = {}    # Add empty camera_controls
             
         def create_still_configuration(self, main=None, **kwargs):
             """Create a still configuration."""
@@ -72,6 +78,10 @@ except ImportError:
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             img.save(filename)
             return filename
+            
+        def camera_configuration(self):
+            """Return camera configuration."""
+            return self.camera_config
     
     # Create mock picamera2 module
     sys.modules['picamera2'] = types.ModuleType('picamera2')
@@ -85,10 +95,21 @@ except ImportError:
     sys.modules['picamera2.outputs'] = types.ModuleType('picamera2.outputs')
     sys.modules['picamera2.outputs'].FileOutput = type('FileOutput', (), {'__init__': lambda self, filename: None})
     
+    # Create mock controls module
+    sys.modules['picamera2.controls'] = types.ModuleType('picamera2.controls')
+    sys.modules['picamera2.controls'].controls = type('controls', (), {
+        'AfModeEnum': type('AfModeEnum', (), {'Manual': 'manual'}),
+        'AwbModeEnum': type('AwbModeEnum', (), {'Auto': 'auto'}),
+        'AeModeEnum': type('AeModeEnum', (), {'Auto': 'auto'}),
+        'AeMeteringModeEnum': type('AeMeteringModeEnum', (), {'Matrix': 'matrix'}),
+        'AeExposureModeEnum': type('AeExposureModeEnum', (), {'Normal': 'normal'})
+    })
+    
     # Import our mocks
     from picamera2 import Picamera2
     from picamera2.encoders import JpegEncoder
     from picamera2.outputs import FileOutput
+    from picamera2.controls import controls
 
 
 class CameraHandler:
