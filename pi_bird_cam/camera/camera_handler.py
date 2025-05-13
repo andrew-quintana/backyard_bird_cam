@@ -203,11 +203,12 @@ class CameraHandler:
                 "LensPosition": lens_position,
                 "AwbMode": AwbModeEnum.Auto,
                 "AeMode": AeModeEnum.Auto,
-                "AeMeteringMode": AeMeteringModeEnum.Matrix,
+                "AeMeteringMode": AeMeteringModeEnum.Centre,  # Changed to centre metering
                 "AeExposureMode": AeExposureModeEnum.Normal,
                 "AeEnable": True,
                 "ExposureTime": 3000,
-                "FrameDurationLimits": (33333, 33333)  # 30fps frame rate
+                "AnalogueGain": 1.0,
+                "ColourGains": (1.0, 1.0)
             }
         )
         
