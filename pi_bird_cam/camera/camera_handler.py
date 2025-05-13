@@ -34,8 +34,28 @@ else:
             self.camera_config = {"size": (1920, 1080)}
             self._is_configured = False
             self._is_started = False
-            self.camera_properties = {}  # Add empty camera_properties
-            self.camera_controls = {}    # Add empty camera_controls
+            # Initialize all required attributes
+            self.camera_properties = {
+                "PixelArraySize": (4056, 3040),
+                "PixelFormat": "RGB888",
+                "FrameDurationLimits": (33333, 33333),
+                "ExposureTime": 3000,
+                "AnalogueGain": 1.0,
+                "ColourGains": (1.0, 1.0),
+                "AeEnable": True,
+                "AeMeteringMode": "matrix",
+                "AeExposureMode": "normal",
+                "AwbMode": "auto",
+                "AfMode": "manual",
+                "LensPosition": 0.0
+            }
+            self.camera_controls = {
+                "AfMode": {"Manual": "manual"},
+                "AwbMode": {"Auto": "auto"},
+                "AeMode": {"Auto": "auto"},
+                "AeMeteringMode": {"Matrix": "matrix"},
+                "AeExposureMode": {"Normal": "normal"}
+            }
             
         def create_still_configuration(self, main=None, **kwargs):
             """Create a still configuration."""
