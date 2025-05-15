@@ -49,7 +49,7 @@ If you prefer to install manually:
    ```
 
 3. Setup the hardware:
-   - Connect the PIR sensor to GPIO pin 4 (BCM numbering)
+   - Connect the PIR sensor to GPIO pin 4 (BCM numbering, other GPIO pins available)
    - Connect the camera module to the CSI port
 
 4. Configure environment variables:

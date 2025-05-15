@@ -8,6 +8,7 @@ Features:
 - Burst mode: Captures multiple photos when motion is detected
 - Configurable PIR sampling rate for adjustable sensitivity
 - Comprehensive logging system
+- Time-based activation (only active during specified hours)
 """
 
 import os
@@ -74,6 +75,12 @@ DEFAULT_BURST_COUNT = 5  # number of photos in burst
 DEFAULT_BURST_DELAY = 0.3  # seconds between burst photos
 DEFAULT_SAMPLING_RATE = 0.1  # seconds between PIR sensor checks
 DEFAULT_COOLDOWN = (DEFAULT_BURST_COUNT * DEFAULT_BURST_DELAY) + 0.2  # seconds between motion triggers
+# Default time range (5am to 9am PST)
+DEFAULT_TIME_RANGE_ENABLED = True
+DEFAULT_START_HOUR = 5
+DEFAULT_START_MINUTE = 0
+DEFAULT_END_HOUR = 9
+DEFAULT_END_MINUTE = 0
 
 # Global camera variable
 camera = None
@@ -178,6 +185,32 @@ def signal_handler(sig, frame):
     cleanup()
     sys.exit(0)
 
+def is_time_in_range(start_hour, start_minute, end_hour, end_minute):
+    """Check if current time is within the specified range.
+    
+    Args:
+        start_hour (int): Starting hour (0-23)
+        start_minute (int): Starting minute (0-59)
+        end_hour (int): Ending hour (0-23)
+        end_minute (int): Ending minute (0-59)
+        
+    Returns:
+        bool: True if current time is within range, False otherwise
+    """
+    now = datetime.datetime.now()
+    current_hour, current_minute = now.hour, now.minute
+    
+    # Convert times to minutes for easier comparison
+    start_time = start_hour * 60 + start_minute
+    end_time = end_hour * 60 + end_minute
+    current_time = current_hour * 60 + current_minute
+    
+    # Handle ranges that cross midnight
+    if end_time < start_time:
+        return current_time >= start_time or current_time <= end_time
+    else:
+        return start_time <= current_time <= end_time
+
 def main():
     parser = argparse.ArgumentParser(description="Smart PIR-triggered bird camera")
     
@@ -196,7 +229,33 @@ def main():
     parser.add_argument("--test", action="store_true",
                         help="Take a test burst and exit (no PIR trigger)")
     
+    # Time range arguments
+    parser.add_argument("--time-range", action="store_true", default=DEFAULT_TIME_RANGE_ENABLED,
+                        help="Enable time-based activation (default: enabled)")
+    parser.add_argument("--no-time-range", action="store_false", dest="time_range",
+                        help="Disable time-based activation")
+    parser.add_argument("--start-time", type=str, default=f"{DEFAULT_START_HOUR:02d}:{DEFAULT_START_MINUTE:02d}",
+                        help=f"Start time in 24-hour format HH:MM (default: {DEFAULT_START_HOUR:02d}:{DEFAULT_START_MINUTE:02d})")
+    parser.add_argument("--end-time", type=str, default=f"{DEFAULT_END_HOUR:02d}:{DEFAULT_END_MINUTE:02d}",
+                        help=f"End time in 24-hour format HH:MM (default: {DEFAULT_END_HOUR:02d}:{DEFAULT_END_MINUTE:02d})")
+    
     args = parser.parse_args()
+    
+    # Parse time range arguments
+    try:
+        start_hour, start_minute = map(int, args.start_time.split(':'))
+        end_hour, end_minute = map(int, args.end_time.split(':'))
+        
+        # Validate time values
+        if not (0 <= start_hour <= 23 and 0 <= start_minute <= 59):
+            logging.error("Invalid start time. Hours must be 0-23, minutes must be 0-59.")
+            return
+        if not (0 <= end_hour <= 23 and 0 <= end_minute <= 59):
+            logging.error("Invalid end time. Hours must be 0-23, minutes must be 0-59.")
+            return
+    except ValueError:
+        logging.error("Invalid time format. Use HH:MM in 24-hour format.")
+        return
     
     # Set up signal handler for Ctrl+C
     signal.signal(signal.SIGINT, signal_handler)
@@ -223,6 +282,8 @@ def main():
     last_motion_time = 0
     last_state = pi.read(args.pin)
     photo_count = 0
+    last_time_check = 0
+    is_active_time = False if args.time_range else True
     
     logging.info(f"PIR-triggered photo capture started.")
     logging.info(f"Using pin GPIO{args.pin} for motion detection")
@@ -231,6 +292,14 @@ def main():
     logging.info(f"Burst mode: {args.burst} photos with {args.burst_delay}s delay")
     logging.info(f"Cooldown between triggers: {args.cooldown}s")
     logging.info(f"PIR sensor sampling rate: {args.sampling_rate}s")
+    
+    if args.time_range:
+        logging.info(f"Time-based activation enabled: {start_hour:02d}:{start_minute:02d} to {end_hour:02d}:{end_minute:02d}")
+        is_active_time = is_time_in_range(start_hour, start_minute, end_hour, end_minute)
+        logging.info(f"Current time is {'within' if is_active_time else 'outside'} the active range")
+    else:
+        logging.info("Time-based activation disabled: active 24/7")
+    
     logging.info("Camera kept always active for fastest response")
     logging.info("Press Ctrl+C to exit")
     
@@ -244,32 +313,48 @@ def main():
         initialize_camera()
         
         while True:
-            # Read current state
-            current_state = pi.read(args.pin)
             current_time = time.time()
             
-            # Print state changes for debugging
-            if current_state != last_state:
-                state_name = "HIGH (1)" if current_state == 1 else "LOW (0)"
-                logging.debug(f"PIR state changed to {state_name}")
+            # Check if we need to update the active time status (check every minute)
+            if args.time_range and current_time - last_time_check >= 60:
+                previous_state = is_active_time
+                is_active_time = is_time_in_range(start_hour, start_minute, end_hour, end_minute)
+                last_time_check = current_time
+                
+                # Log if the active state changed
+                if is_active_time != previous_state:
+                    if is_active_time:
+                        logging.info("Entering active time range - PIR sensor is now active")
+                    else:
+                        logging.info("Exiting active time range - PIR sensor is now inactive")
             
-            # Check if motion was detected (rising edge: 0->1) and past cooldown period
-            if current_state == 1 and last_state == 0 and (current_time - last_motion_time > args.cooldown):
-                # Motion detected, take a burst of photos
-                logging.info(f"Motion detected! Capturing burst of {args.burst} photos...")
+            # Only process motion detection if in active time range or if time range is disabled
+            if is_active_time:
+                # Read current state
+                current_state = pi.read(args.pin)
                 
-                # Capture the burst
-                successful = capture_burst(args.output, "motion", args.burst, args.burst_delay)
-                photo_count += successful
+                # Print state changes for debugging
+                if current_state != last_state:
+                    state_name = "HIGH (1)" if current_state == 1 else "LOW (0)"
+                    logging.debug(f"PIR state changed to {state_name}")
                 
-                if successful > 0:
-                    logging.info(f"Burst complete: {successful}/{args.burst} photos captured")
-                    last_motion_time = current_time
-                else:
-                    logging.error("Failed to capture any photos in burst")
-                
-            # Update last state
-            last_state = current_state
+                # Check if motion was detected (rising edge: 0->1) and past cooldown period
+                if current_state == 1 and last_state == 0 and (current_time - last_motion_time > args.cooldown):
+                    # Motion detected, take a burst of photos
+                    logging.info(f"Motion detected! Capturing burst of {args.burst} photos...")
+                    
+                    # Capture the burst
+                    successful = capture_burst(args.output, "motion", args.burst, args.burst_delay)
+                    photo_count += successful
+                    
+                    if successful > 0:
+                        logging.info(f"Burst complete: {successful}/{args.burst} photos captured")
+                        last_motion_time = current_time
+                    else:
+                        logging.error("Failed to capture any photos in burst")
+                    
+                # Update last state
+                last_state = current_state
             
             # Delay between PIR sensor checks (sampling rate)
             time.sleep(args.sampling_rate)

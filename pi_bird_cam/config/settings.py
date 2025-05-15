@@ -10,7 +10,15 @@ class Settings:
     DEFAULT_SETTINGS = {
         "pir_sensor": {
             "pin": 17,
-            "trigger_cooldown": 5  # seconds
+            "trigger_cooldown": 5,  # seconds
+            "active_time_range": {
+                "enabled": True,
+                "start_hour": 5,  # 5am PST
+                "start_minute": 0,
+                "end_hour": 9,    # 9am PST
+                "end_minute": 0,
+                "timezone": "PST"
+            }
         },
         "camera": {
             "resolution": [1920, 1080],
