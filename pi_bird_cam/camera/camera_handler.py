@@ -184,7 +184,7 @@ class CameraHandler:
             controls={
                 # Only set what you want to override; omit the rest for defaults
                 "AfMode": 0,  # Manual focus, if you want to control focus
-                "LensPosition": 3,  # Use calculated lens position based on focus distance
+                "LensPosition": 1.25,  # Use calculated lens position based on focus distance
                 "AeEnable": False,  # Auto exposure (optional, usually default)
                 "ExposureTime": 5000,  # Initial exposure time in microseconds
             }
