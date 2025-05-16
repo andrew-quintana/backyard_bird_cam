@@ -117,10 +117,19 @@ def capture_photo(output_dir, filename):
     """Capture a high-resolution photo with the always-active camera"""
     global camera
     
+    # Ensure the base output directory exists
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
-    output_path = os.path.join(output_dir, filename)
+    # Create date-based directory
+    date_dir = datetime.datetime.now().strftime("%Y%m%d")
+    date_dir_path = os.path.join(output_dir, date_dir)
+    
+    # Ensure date directory exists
+    os.makedirs(date_dir_path, exist_ok=True)
+    
+    # Full path for the photo
+    output_path = os.path.join(date_dir_path, filename)
     
     try:
         # Make sure camera is initialized
@@ -151,6 +160,13 @@ def capture_burst(output_dir, base_filename, count, delay):
     
     # Use timestamp as the base for all files in burst
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Create date-based directory name
+    date_dir = datetime.datetime.now().strftime("%Y%m%d")
+    date_dir_path = os.path.join(output_dir, date_dir)
+    
+    # Ensure date directory exists
+    os.makedirs(date_dir_path, exist_ok=True)
     
     for i in range(count):
         # Create filename with burst index

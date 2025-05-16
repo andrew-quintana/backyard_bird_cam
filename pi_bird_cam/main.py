@@ -154,7 +154,8 @@ def main():
                     try:
                         # Generate a filename based on timestamp
                         filename = storage.generate_filename()
-                        photo_path = os.path.join(storage.base_dir, filename)
+                        # Use the get_photo_path method to get the full path with date directory
+                        photo_path = storage.get_photo_path(filename)
                         
                         # Take a photo
                         photo_path = camera.take_photo(photo_path)

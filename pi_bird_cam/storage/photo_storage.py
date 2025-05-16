@@ -51,6 +51,19 @@ class PhotoStorage:
             self.logger.info(f"Saved metadata for {len(self.metadata)} photos")
         except Exception as e:
             self.logger.error(f"Failed to save metadata: {str(e)}")
+    
+    def get_date_directory(self, date=None):
+        """Get the date directory name in YYYYMMDD format.
+        
+        Args:
+            date (datetime, optional): Date to use, defaults to current date
+            
+        Returns:
+            str: Directory name in YYYYMMDD format
+        """
+        if date is None:
+            date = datetime.now()
+        return date.strftime("%Y%m%d")
         
     def generate_filename(self, extension=".jpg"):
         """Generate a unique filename for a photo.
@@ -143,14 +156,38 @@ class PhotoStorage:
         """
         if not os.path.exists(self.base_dir):
             return []
-            
-        # Get all files in the directory
-        all_files = os.listdir(self.base_dir)
         
-        # Filter for image files
-        photo_files = [f for f in all_files if 
-                      f.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')) and
-                      os.path.isfile(os.path.join(self.base_dir, f))]
+        photo_files = []
+        
+        # Get all directories in the base directory
+        all_dirs = [d for d in os.listdir(self.base_dir) 
+                   if os.path.isdir(os.path.join(self.base_dir, d))]
+        
+        # Also include the base directory itself for backward compatibility
+        all_dirs.append("")
+        
+        for dir_name in all_dirs:
+            dir_path = os.path.join(self.base_dir, dir_name)
+            
+            # Skip if not a directory
+            if not os.path.isdir(dir_path):
+                continue
+                
+            # Get all files in the directory
+            try:
+                dir_files = os.listdir(dir_path)
+                
+                # Filter for image files
+                for f in dir_files:
+                    if (f.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')) and
+                        os.path.isfile(os.path.join(dir_path, f))):
+                        # Store as dir_name/filename if in a subdirectory
+                        if dir_name:
+                            photo_files.append(os.path.join(dir_name, f))
+                        else:
+                            photo_files.append(f)
+            except Exception as e:
+                self.logger.error(f"Error listing files in {dir_path}: {str(e)}")
                       
         return photo_files
         
@@ -163,7 +200,20 @@ class PhotoStorage:
         Returns:
             str: Full path to the photo
         """
-        return os.path.join(self.base_dir, filename)
+        # Check if filename already includes a directory
+        if os.path.dirname(filename):
+            # If it already has a directory component, use it as is
+            return os.path.join(self.base_dir, filename)
+        
+        # Get the current date directory
+        date_dir = self.get_date_directory()
+        date_dir_path = os.path.join(self.base_dir, date_dir)
+        
+        # Create the date directory if it doesn't exist
+        os.makedirs(date_dir_path, exist_ok=True)
+        
+        # Return the path with the date directory included
+        return os.path.join(date_dir_path, filename)
     
     def get_photo_metadata(self, filename):
         """Get metadata for a photo.
@@ -174,7 +224,9 @@ class PhotoStorage:
         Returns:
             dict: Metadata for the photo
         """
-        return self.metadata.get(filename, {})
+        # Extract just the filename without directory for metadata lookup
+        base_filename = os.path.basename(filename)
+        return self.metadata.get(base_filename, {})
     
     def delete_photo(self, filename):
         """Delete a photo.
@@ -192,8 +244,9 @@ class PhotoStorage:
                 os.remove(path)
                 
                 # Remove from metadata
-                if filename in self.metadata:
-                    del self.metadata[filename]
+                base_filename = os.path.basename(filename)
+                if base_filename in self.metadata:
+                    del self.metadata[base_filename]
                     self.save_metadata()
                 
                 self.logger.info(f"Deleted photo: {filename}")

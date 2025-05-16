@@ -9,13 +9,13 @@ class Settings:
 
     DEFAULT_SETTINGS = {
         "pir_sensor": {
-            "pin": 17,
-            "trigger_cooldown": 5,  # seconds
+            "pin": 4,
+            "trigger_cooldown": 0.8,  # seconds
             "active_time_range": {
                 "enabled": True,
-                "start_hour": 5,  # 5am PST
+                "start_hour": 5,
                 "start_minute": 0,
-                "end_hour": 9,    # 9am PST
+                "end_hour": 20,
                 "end_minute": 0,
                 "timezone": "PST"
             }

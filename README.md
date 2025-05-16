@@ -161,3 +161,29 @@ If you encounter issues:
 4. Verify camera is working: `libcamera-still -o test.jpg`
 5. Check permissions: Ensure user is in the `gpio` group
 6. See TROUBLESHOOTING.md for more details 
+
+## Photo Storage
+
+Photos captured by the bird camera are automatically organized into date-based directories. The directory structure is as follows:
+
+```
+data/photos/
+├── 20240513/
+│   ├── 20240513_080123.jpg
+│   ├── 20240513_080124_burst1.jpg
+│   └── 20240513_080124_burst2.jpg
+├── 20240514/
+│   ├── 20240514_070045.jpg
+│   └── 20240514_070046.jpg
+└── photo_metadata.json
+```
+
+Each photo is stored in a directory named with the format `YYYYMMDD` (e.g., `20240520` for May 20, 2024). This organization makes it easier to browse and manage photos by date.
+
+The system automatically:
+- Creates the date directory if it doesn't exist
+- Maintains the existing filename convention with timestamps
+- Preserves metadata for all photos
+- Enforces the maximum photo limit across all date directories
+
+This structure helps keep your bird photos organized chronologically while maintaining all the functionality of the original system. 

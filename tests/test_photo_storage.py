@@ -92,6 +92,17 @@ class TestPhotoStorage(unittest.TestCase):
         self.assertEqual(kwargs.get('indent'), 2)
 
     @patch('src.storage.photo_storage.datetime')
+    def test_get_date_directory(self, mock_datetime):
+        """Test getting date directory name."""
+        # Mock the datetime to return a fixed date
+        mock_now = MagicMock()
+        mock_now.strftime.return_value = '20220101'
+        mock_datetime.now.return_value = mock_now
+        
+        date_dir = self.storage.get_date_directory()
+        self.assertEqual(date_dir, '20220101')
+
+    @patch('src.storage.photo_storage.datetime')
     def test_generate_filename(self, mock_datetime):
         """Test filename generation."""
         # Mock the datetime to return a fixed timestamp
@@ -107,11 +118,37 @@ class TestPhotoStorage(unittest.TestCase):
         self.assertEqual(filename, '20220101_120000.png')
 
     @patch('src.storage.photo_storage.datetime')
+    def test_get_photo_path(self, mock_datetime):
+        """Test getting photo path with date-based directory."""
+        # Mock the datetime to return a fixed date
+        mock_now = MagicMock()
+        mock_now.strftime.return_value = '20220101'
+        mock_datetime.now.return_value = mock_now
+        
+        filename = 'test.jpg'
+        date_dir = '20220101'
+        expected_path = os.path.join(self.base_dir, date_dir, filename)
+        
+        result = self.storage.get_photo_path(filename)
+        self.assertEqual(result, expected_path)
+        
+        # Verify the date directory was created
+        self.assertTrue(os.path.exists(os.path.join(self.base_dir, date_dir)))
+        
+        # Test with existing directory component
+        dir_filename = os.path.join('existing_dir', 'test.jpg')
+        expected_path = os.path.join(self.base_dir, 'existing_dir', 'test.jpg')
+        result = self.storage.get_photo_path(dir_filename)
+        self.assertEqual(result, expected_path)
+
+    @patch('src.storage.photo_storage.datetime')
     def test_save_photo_bytes(self, mock_datetime):
         """Test saving photo data as bytes."""
         # Setup mock datetime
         mock_now = MagicMock()
         mock_now.isoformat.return_value = '2022-01-01T12:00:00'
+        # For date directory
+        mock_now.strftime.return_value = '20220101'
         mock_datetime.now.return_value = mock_now
         
         # Create test data
@@ -121,20 +158,23 @@ class TestPhotoStorage(unittest.TestCase):
         # Save the photo
         result = self.storage.save_photo(photo_data, filename)
         
+        # Get expected path with date directory
+        date_dir = '20220101'
+        expected_path = os.path.join(self.base_dir, date_dir, filename)
+        
         # Verify file was saved
-        full_path = os.path.join(self.base_dir, filename)
-        self.assertEqual(result, full_path)
-        self.assertTrue(os.path.exists(full_path))
+        self.assertEqual(result, expected_path)
+        self.assertTrue(os.path.exists(expected_path))
         
         # Verify file content
-        with open(full_path, 'rb') as f:
+        with open(expected_path, 'rb') as f:
             content = f.read()
             self.assertEqual(content, photo_data)
             
         # Verify metadata
         self.assertIn(filename, self.storage.metadata)
         self.assertEqual(self.storage.metadata[filename]['filename'], filename)
-        self.assertEqual(self.storage.metadata[filename]['path'], full_path)
+        self.assertEqual(self.storage.metadata[filename]['path'], expected_path)
 
     @patch('src.storage.photo_storage.datetime')
     def test_save_photo_file_path(self, mock_datetime):
@@ -142,6 +182,8 @@ class TestPhotoStorage(unittest.TestCase):
         # Setup mock datetime
         mock_now = MagicMock()
         mock_now.isoformat.return_value = '2022-01-01T12:00:00'
+        # For date directory
+        mock_now.strftime.return_value = '20220101'
         mock_datetime.now.return_value = mock_now
         
         # Create a test source file
@@ -153,45 +195,58 @@ class TestPhotoStorage(unittest.TestCase):
         filename = 'copied.jpg'
         result = self.storage.save_photo(source_file, filename)
         
+        # Get expected path with date directory
+        date_dir = '20220101'
+        expected_path = os.path.join(self.base_dir, date_dir, filename)
+        
         # Verify file was copied
-        full_path = os.path.join(self.base_dir, filename)
-        self.assertEqual(result, full_path)
-        self.assertTrue(os.path.exists(full_path))
+        self.assertEqual(result, expected_path)
+        self.assertTrue(os.path.exists(expected_path))
         
         # Verify file content
-        with open(full_path, 'rb') as f:
+        with open(expected_path, 'rb') as f:
             content = f.read()
             self.assertEqual(content, b'source_data')
 
-    def test_list_photos(self):
-        """Test listing photos."""
-        # Create some test photos
-        filenames = ['test1.jpg', 'test2.png', 'test3.jpeg', 'not_a_photo.txt']
-        for filename in filenames:
-            with open(os.path.join(self.base_dir, filename), 'w') as f:
+    @patch('src.storage.photo_storage.datetime')
+    def test_list_photos(self, mock_datetime):
+        """Test listing photos from date-based directories."""
+        # Mock the datetime for consistent date directory
+        mock_now = MagicMock()
+        mock_now.strftime.return_value = '20220101'
+        mock_datetime.now.return_value = mock_now
+        
+        # Create date directories
+        date_dirs = ['20220101', '20220102']
+        for date_dir in date_dirs:
+            os.makedirs(os.path.join(self.base_dir, date_dir), exist_ok=True)
+        
+        # Create some test photos in date directories
+        test_files = [
+            ('20220101', 'test1.jpg'),
+            ('20220101', 'test2.png'),
+            ('20220102', 'test3.jpeg'),
+            ('20220102', 'not_a_photo.txt')
+        ]
+        
+        for date_dir, filename in test_files:
+            with open(os.path.join(self.base_dir, date_dir, filename), 'w') as f:
                 f.write('test')
                 
-        # Create a subdirectory (should be ignored)
-        os.makedirs(os.path.join(self.base_dir, 'subdir'))
+        # Also create a file in the base directory for backward compatibility
+        with open(os.path.join(self.base_dir, 'base_test.jpg'), 'w') as f:
+            f.write('test')
         
         # List photos
         photos = self.storage.list_photos()
         
-        # Verify only image files are returned
-        self.assertEqual(len(photos), 3)
-        self.assertIn('test1.jpg', photos)
-        self.assertIn('test2.png', photos)
-        self.assertIn('test3.jpeg', photos)
-        self.assertNotIn('not_a_photo.txt', photos)
-        self.assertNotIn('subdir', photos)
-
-    def test_get_photo_path(self):
-        """Test getting photo path."""
-        filename = 'test.jpg'
-        expected_path = os.path.join(self.base_dir, filename)
-        
-        result = self.storage.get_photo_path(filename)
-        self.assertEqual(result, expected_path)
+        # Verify photos from date directories and base directory are returned
+        self.assertEqual(len(photos), 4)  # 3 images in date dirs + 1 in base dir
+        self.assertIn(os.path.join('20220101', 'test1.jpg'), photos)
+        self.assertIn(os.path.join('20220101', 'test2.png'), photos)
+        self.assertIn(os.path.join('20220102', 'test3.jpeg'), photos)
+        self.assertIn('base_test.jpg', photos)
+        self.assertNotIn(os.path.join('20220102', 'not_a_photo.txt'), photos)
 
     def test_get_photo_metadata(self):
         """Test getting photo metadata."""
@@ -200,27 +255,41 @@ class TestPhotoStorage(unittest.TestCase):
         metadata = {'timestamp': '2022-01-01T12:00:00', 'path': '/test/path'}
         self.storage.metadata[filename] = metadata
         
-        # Get metadata
+        # Get metadata for filename without directory
         result = self.storage.get_photo_metadata(filename)
+        self.assertEqual(result, metadata)
+        
+        # Get metadata for filename with directory
+        result = self.storage.get_photo_metadata(os.path.join('20220101', filename))
         self.assertEqual(result, metadata)
         
         # Test non-existent file
         result = self.storage.get_photo_metadata('nonexistent.jpg')
         self.assertEqual(result, {})
 
-    def test_delete_photo(self):
+    @patch('src.storage.photo_storage.datetime')
+    def test_delete_photo(self, mock_datetime):
         """Test deleting a photo."""
-        # Create a test photo
+        # Mock the datetime for consistent date directory
+        mock_now = MagicMock()
+        mock_now.strftime.return_value = '20220101'
+        mock_datetime.now.return_value = mock_now
+        
+        # Create a date directory
+        date_dir = '20220101'
+        os.makedirs(os.path.join(self.base_dir, date_dir), exist_ok=True)
+        
+        # Create a test photo in the date directory
         filename = 'test.jpg'
-        full_path = os.path.join(self.base_dir, filename)
+        full_path = os.path.join(self.base_dir, date_dir, filename)
         with open(full_path, 'w') as f:
             f.write('test')
             
         # Add to metadata
         self.storage.metadata[filename] = {'timestamp': '2022-01-01T12:00:00', 'path': full_path}
         
-        # Delete the photo
-        result = self.storage.delete_photo(filename)
+        # Delete the photo using the full path with date directory
+        result = self.storage.delete_photo(os.path.join(date_dir, filename))
         
         # Verify photo was deleted
         self.assertTrue(result)
